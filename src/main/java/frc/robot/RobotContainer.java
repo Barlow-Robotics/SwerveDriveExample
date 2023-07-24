@@ -18,7 +18,11 @@ public class RobotContainer {
   public RobotContainer() {
     configureButtonBindings();
 
-    driveSub.setDefaultCommand(
+    driveSub.setDefaultCommand( // EHP need to turn drive into a command outside of RobotContainer 
+                                // EHP add the field into the simulation
+                                // EHP add simulation files and code
+                                // EHP set up networktables/smartdashboard 
+                                // EHP auto???
         // The left stick controls translation of the robot.
         // Turning is controlled by the X axis of the right stick.
         new RunCommand(

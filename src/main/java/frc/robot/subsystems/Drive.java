@@ -14,81 +14,69 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.original.SwerveModuleOld;
+
 
 public class Drive extends SubsystemBase {
 
+    /*******************************************************************************/
     /***** CONSTANTS *****/
     
     public static final double MaxSpeed = 3.0; // meters per second
     public static final double MaxAngularSpeed = Math.PI; // 1/2 rotation per second
     
-    private static final int FrontLeftDriveMotorChannel = 1;
-    private static final int FrontLeftTurningMotorChannel = 2;
-    private static final int FrontLeftDriveEncoderChannelA = 0;
-    private static final int FrontLeftDriveEncoderChannelB = 1;
-    private static final int FrontLeftTurningEncoderChannelA = 2;
-    private static final int FrontLeftTurningEncoderChannelB = 3;
+    public static final boolean GyroReversed = false;
+    
+    private static final int FrontLeftDriveMotorID = 1; // EHP change
+    private static final int FrontLeftTurnMotorID = 2; // EHP change
+    private static final int FrontLeftDriveEncoderID = 0; // EHP change
+    private static final int FrontLeftTurnEncoderID = 2; // EHP change
 
-    private static final int FrontRightDriveMotorChannel = 3;
-    private static final int FrontRightTurningMotorChannel = 4;
-    private static final int FrontRightDriveEncoderChannelA = 4;
-    private static final int FrontRightDriveEncoderChannelB = 5;
-    private static final int FrontRightTurningEncoderChannelA = 6;
-    private static final int FrontRightTurningEncoderChannelB = 7;
+    private static final int FrontRightDriveMotorID = 3; // EHP change
+    private static final int FrontRightTurnMotorID = 4; // EHP change
+    private static final int FrontRightDriveEncoderID = 4; // EHP change
+    private static final int FrontRightTurnEncoderID = 6; // EHP change
 
-    private static final int BackLeftDriveMotorChannel = 5;
-    private static final int BackLeftTurningMotorChannel = 6;
-    private static final int BackLeftDriveEncoderChannelA = 8;
-    private static final int BackLeftDriveEncoderChannelB = 9;
-    private static final int BackLeftTurningEncoderChannelA = 10;
-    private static final int BackLeftTurningEncoderChannelB = 11;
+    private static final int BackLeftDriveMotorID = 5; // EHP change
+    private static final int BackLeftTurnMotorID = 6; // EHP change
+    private static final int BackLeftDriveEncoderID = 8; // EHP change 
+    private static final int BackLeftTurnEncoderID = 10; // EHP change
 
-    private static final int BackRightDriveMotorChannel = 7;
-    private static final int BackRightTurningMotorChannel = 8;
-    private static final int BackRightDriveEncoderChannelA = 12;
-    private static final int BackRightDriveEncoderChannelB = 13;
-    private static final int BackRightTurningEncoderChannelA = 14;
-    private static final int BackRightTurningEncoderChannelB = 15;
+    private static final int BackRightDriveMotorID = 7; // EHP change
+    private static final int BackRightTurnMotorID = 8; // EHP change 
+    private static final int BackRightDriveEncoderID = 12; // EHP change
+    private static final int BackRightTurnEncoderID = 14; // EHP change 
 
     /*******************************************************************************/
+    /*******************************************************************************/
 
-    private final SwerveModuleOld frontLeft = new SwerveModuleOld(
-            FrontLeftDriveMotorChannel,
-            FrontLeftTurningMotorChannel,
-            FrontLeftDriveEncoderChannelA,
-            FrontLeftDriveEncoderChannelB,
-            FrontLeftTurningEncoderChannelA,
-            FrontLeftTurningEncoderChannelB);
+    private final SwerveModule frontLeft = new SwerveModule(
+            FrontLeftDriveMotorID,
+            FrontLeftTurnMotorID,
+            FrontLeftDriveEncoderID,
+            FrontLeftTurnEncoderID);
 
-    private final SwerveModuleOld frontRight = new SwerveModuleOld(
-            FrontRightDriveMotorChannel,
-            FrontRightTurningMotorChannel,
-            FrontRightDriveEncoderChannelA,
-            FrontRightDriveEncoderChannelB,
-            FrontRightTurningEncoderChannelA,
-            FrontRightTurningEncoderChannelB);
+    private final SwerveModule frontRight = new SwerveModule(
+            FrontRightDriveMotorID,
+            FrontRightTurnMotorID,
+            FrontRightDriveEncoderID,
+            FrontRightTurnEncoderID);
 
-    private final SwerveModuleOld backLeft = new SwerveModuleOld(
-            BackLeftDriveMotorChannel,
-            BackLeftTurningMotorChannel,
-            BackLeftDriveEncoderChannelA,
-            BackLeftDriveEncoderChannelB,
-            BackLeftTurningEncoderChannelA,
-            BackLeftTurningEncoderChannelB);
+    private final SwerveModule backLeft = new SwerveModule(
+            BackLeftDriveMotorID,
+            BackLeftTurnMotorID,
+            BackLeftDriveEncoderID,
+            BackLeftTurnEncoderID);
 
-    private final SwerveModuleOld backRight = new SwerveModuleOld(
-            BackRightDriveMotorChannel,
-            BackRightTurningMotorChannel,
-            BackRightDriveEncoderChannelA,
-            BackRightDriveEncoderChannelB,
-            BackRightTurningEncoderChannelA,
-            BackRightTurningEncoderChannelB);
+    private final SwerveModule backRight = new SwerveModule(
+            BackRightDriveMotorID,
+            BackRightTurnMotorID,
+            BackRightDriveEncoderID,
+            BackRightTurnEncoderID);
 
-    private final Translation2d frontLeftLocation = new Translation2d(0.381, 0.381);
-    private final Translation2d frontRightLocation = new Translation2d(0.381, -0.381);
-    private final Translation2d backLeftLocation = new Translation2d(-0.381, 0.381);
-    private final Translation2d backRightLocation = new Translation2d(-0.381, -0.381);
+    private final Translation2d frontLeftLocation = new Translation2d(0.381, 0.381); // EHP change
+    private final Translation2d frontRightLocation = new Translation2d(0.381, -0.381); // EHP change
+    private final Translation2d backLeftLocation = new Translation2d(-0.381, 0.381); // EHP change
+    private final Translation2d backRightLocation = new Translation2d(-0.381, -0.381); // EHP change
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
             frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
@@ -157,7 +145,7 @@ public class Drive extends SubsystemBase {
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(
-                desiredStates, DriveConstants.kMaxSpeedMetersPerSecond);
+                desiredStates, MaxSpeed);
         frontLeft.setDesiredState(desiredStates[0]);
         frontRight.setDesiredState(desiredStates[1]);
         backLeft.setDesiredState(desiredStates[2]);
@@ -181,6 +169,6 @@ public class Drive extends SubsystemBase {
     }
 
     public double getTurnRate() {
-        return gyro.getRate() * (DriveConstants.kGyroReversed ? -1.0 : 1.0); // degrees per second
+        return gyro.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
     }
 }

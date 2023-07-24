@@ -4,6 +4,10 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,59 +16,53 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class SwerveModule {
-  
-  /**********************************************************************/
-  /***** CONSTANTS *****/
 
-  private static final double WheelRadius = Units.inchesToMeters(2.0);
-  private static final int EncoderResolution = 4096;
+    /**********************************************************************/
+    /***** CONSTANTS *****/
 
-  private static final double ModuleMaxAngularVelocity = Drive.MaxAngularSpeed;
-  private static final double ModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    private static final double WheelRadius = Units.inchesToMeters(2.0);
+    private static final int EncoderResolution = 4096;
 
-  private static final double DriveKP = 1; // EHP change
-  private static final double DriveKI = 0;
-  private static final double DriveKD = 0;
-  
-  private static final double TurnKP = 1; // EHP change
-  private static final double TurnKI = 0;
-  private static final double TurnKD = 0;
+    private static final double ModuleMaxAngularVelocity = Drive.MaxAngularSpeed;
+    private static final double ModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
-  private static final double DriveFeedForwardKS = 1; // EHP change
-  private static final double DriveFeedForwardKV = 3; // EHP change
-  private static final double TurnFeedForwardKS = 1; // EHP change
-  private static final double TurnFeedForwardKV = 0.5; // EHP change
+    private static final double DriveKP = 1; // EHP change
+    private static final double DriveKI = 0;
+    private static final double DriveKD = 0;
 
-  public static final double kMaxModuleAngularSpeedRadiansPerSecond = 2 * Math.PI;
-  public static final double kMaxModuleAngularAccelerationRadiansPerSecondSquared = 2 * Math.PI;
+    private static final double TurnKP = 1; // EHP change
+    private static final double TurnKI = 0;
+    private static final double TurnKD = 0;
 
-  public static final int kEncoderCPR = 1024;
-  public static final double kDriveEncoderDistancePerPulse =
-      // Assumes the encoders are directly mounted on the wheel shafts
-      (2 * WheelRadius * Math.PI) / (double) kEncoderCPR;
+    public static final double kMaxModuleAngularSpeedRadiansPerSecond = 2 * Math.PI;
+    public static final double kMaxModuleAngularAccelerationRadiansPerSecondSquared = 2 * Math.PI;
 
-  public static final double kTurningEncoderDistancePerPulse =
-      // Assumes the encoders are on a 1:1 reduction with the module shaft.
-      (2 * Math.PI) / (double) kEncoderCPR;
+    public static final int kEncoderCPR = 1024;
+    public static final double kDriveEncoderDistancePerPulse =
+            // Assumes the encoders are directly mounted on the wheel shafts
+            (2 * WheelRadius * Math.PI) / (double) kEncoderCPR;
 
-  public static final double kPModuleTurningController = 1;
+    public static final double kTurningEncoderDistancePerPulse =
+            // Assumes the encoders are on a 1:1 reduction with the module shaft.
+            (2 * Math.PI) / (double) kEncoderCPR;
 
-  public static final double kPModuleDriveController = 1;
+    public static final double kPModuleTurningController = 1;
 
-  /**********************************************************************/
-  /**********************************************************************/
+    public static final double kPModuleDriveController = 1;
 
-  private final CANSparkMax driveMotor;
-  private final Spark turnMotor;
+    /**********************************************************************/
+    /**********************************************************************/
 
-  private final Encoder driveEncoder;
-  private final Encoder turnEncoder;
+    private final CANSparkMax driveMotor;
+    private final CANSparkMax turnMotor;
 
-  private final PIDController drivePIDController = new PIDController(DriveKP, DriveKI, DriveKD);
-  private final ProfiledPIDController turnPIDController = // EHP change
+    private final WPI_CANCoder driveEncoder;
+    private final WPI_CANCoder turnEncoder;
+
+    private final PIDController drivePIDController = new PIDController(DriveKP, DriveKI, DriveKD);
+    private final ProfiledPIDController turnPIDController = // EHP change
             new ProfiledPIDController(
                     TurnKP,
                     TurnKI,
@@ -72,51 +70,44 @@ public class SwerveModule {
                     new TrapezoidProfile.Constraints(ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
 
 
-  public SwerveModule(
-      int driveMotorChannel,
-      int turningMotorChannel,
-      int[] driveEncoderChannels,
-      int[] turningEncoderChannels,
-      boolean driveEncoderReversed,
-      boolean turningEncoderReversed) {
-    driveMotor = new Spark(driveMotorChannel);
-    turnMotor = new Spark(turningMotorChannel);
+    public SwerveModule(
+            int driveMotorID,
+            int turningMotorID,
+            int driveEncoderID,
+            int turnEncoderID) {
 
-    driveEncoder = new Encoder(driveEncoderChannels[0], driveEncoderChannels[1]);
-    driveEncoder.setDistancePerPulse(kDriveEncoderDistancePerPulse);
-    driveEncoder.setReverseDirection(driveEncoderReversed);
+        driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
+        turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
 
-    turnEncoder = new Encoder(turningEncoderChannels[0], turningEncoderChannels[1]);
-    turnEncoder.setDistancePerPulse(kTurningEncoderDistancePerPulse);
-    turnEncoder.setReverseDirection(turningEncoderReversed);
-    turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
-  }
+        driveEncoder = new WPI_CANCoder(driveEncoderID, "rio");
+        turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
+    }
 
-  public SwerveModuleState getState() {
-    return new SwerveModuleState(
-        driveEncoder.getRate(), new Rotation2d(turnEncoder.getDistance()));
-  }
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(
+                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getPosition())); 
+    }
 
-  public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(
-        driveEncoder.getDistance(), new Rotation2d(turnEncoder.getDistance()));
-  }
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(
+                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getPosition()));
+    }
 
-  public void setDesiredState(SwerveModuleState desiredState) {
+    public void setDesiredState(SwerveModuleState desiredState) {
 
-    // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(turnEncoder.getDistance()));
+        // Optimize the reference state to avoid spinning further than 90 degrees
+        SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(turnEncoder.getPosition()));
 
-    final double driveOutput = drivePIDController.calculate(driveEncoder.getRate(), state.speedMetersPerSecond);
-    final double turnOutput = turnPIDController.calculate(turnEncoder.getDistance(), state.angle.getRadians());
+        final double driveOutput = drivePIDController.calculate(driveEncoder.getVelocity(), state.speedMetersPerSecond);
+        final double turnOutput = turnPIDController.calculate(turnEncoder.getPosition(), state.angle.getRadians());
 
-    // Calculate the turning motor output from the turning PID controller.
-    driveMotor.set(driveOutput);
-    turnMotor.set(turnOutput);
-  }
+        // Calculate the turning motor output from the turning PID controller.
+        driveMotor.set(driveOutput);
+        turnMotor.set(turnOutput);
+    }
 
-  public void resetEncoders() {
-    driveEncoder.reset();
-    turnEncoder.reset();
-  }
+    public void resetEncoders() {
+        driveEncoder.setPosition(0);
+        turnEncoder.setPosition(0);
+    }
 }
