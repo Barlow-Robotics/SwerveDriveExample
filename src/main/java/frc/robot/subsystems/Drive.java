@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 
 
 public class Drive extends SubsystemBase {
@@ -26,25 +27,25 @@ public class Drive extends SubsystemBase {
     
     public static final boolean GyroReversed = false;
     
-    private static final int FrontLeftDriveMotorID = 1; // EHP change
-    private static final int FrontLeftTurnMotorID = 2; // EHP change
-    private static final int FrontLeftDriveEncoderID = 0; // EHP change
-    private static final int FrontLeftTurnEncoderID = 2; // EHP change
+    public static final int FrontLeftDriveMotorID = 1; // EHP change
+    public static final int FrontLeftTurnMotorID = 2; // EHP change
+    public static final int FrontLeftDriveEncoderID = 0; // EHP change
+    public static final int FrontLeftTurnEncoderID = 2; // EHP change
 
-    private static final int FrontRightDriveMotorID = 3; // EHP change
-    private static final int FrontRightTurnMotorID = 4; // EHP change
-    private static final int FrontRightDriveEncoderID = 4; // EHP change
-    private static final int FrontRightTurnEncoderID = 6; // EHP change
+    public static final int FrontRightDriveMotorID = 3; // EHP change
+    public static final int FrontRightTurnMotorID = 4; // EHP change
+    public static final int FrontRightDriveEncoderID = 4; // EHP change
+    public static final int FrontRightTurnEncoderID = 6; // EHP change
 
-    private static final int BackLeftDriveMotorID = 5; // EHP change
-    private static final int BackLeftTurnMotorID = 6; // EHP change
-    private static final int BackLeftDriveEncoderID = 8; // EHP change 
-    private static final int BackLeftTurnEncoderID = 10; // EHP change
+    public static final int BackLeftDriveMotorID = 5; // EHP change
+    public static final int BackLeftTurnMotorID = 6; // EHP change
+    public static final int BackLeftDriveEncoderID = 8; // EHP change 
+    public static final int BackLeftTurnEncoderID = 10; // EHP change
 
-    private static final int BackRightDriveMotorID = 7; // EHP change
-    private static final int BackRightTurnMotorID = 8; // EHP change 
-    private static final int BackRightDriveEncoderID = 12; // EHP change
-    private static final int BackRightTurnEncoderID = 14; // EHP change 
+    public static final int BackRightDriveMotorID = 7; // EHP change
+    public static final int BackRightTurnMotorID = 8; // EHP change 
+    public static final int BackRightDriveEncoderID = 12; // EHP change
+    public static final int BackRightTurnEncoderID = 14; // EHP change 
 
     /*******************************************************************************/
     /*******************************************************************************/
@@ -87,10 +88,10 @@ public class Drive extends SubsystemBase {
             kinematics,
             gyro.getRotation2d(),
             new SwerveModulePosition[] {
-                    frontLeft.getPosition(),
-                    frontRight.getPosition(),
-                    backLeft.getPosition(),
-                    backRight.getPosition()
+                    frontLeft.getAbsolutePosition(),
+                    frontRight.getAbsolutePosition(),
+                    backLeft.getAbsolutePosition(),
+                    backRight.getAbsolutePosition()
             });
 
     public Drive() {
@@ -101,10 +102,10 @@ public class Drive extends SubsystemBase {
         odometry.update(
                 gyro.getRotation2d(),
                 new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
+                        frontLeft.getAbsolutePosition(),
+                        frontRight.getAbsolutePosition(),
+                        backLeft.getAbsolutePosition(),
+                        backRight.getAbsolutePosition()
                 });
     }
 
@@ -117,10 +118,10 @@ public class Drive extends SubsystemBase {
         odometry.resetPosition(
                 gyro.getRotation2d(),
                 new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
+                        frontLeft.getAbsolutePosition(),
+                        frontRight.getAbsolutePosition(),
+                        backLeft.getAbsolutePosition(),
+                        backRight.getAbsolutePosition()
                 },
                 pose);
     }
@@ -170,5 +171,18 @@ public class Drive extends SubsystemBase {
 
     public double getTurnRate() {
         return gyro.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
+    }
+    //velocity closed loop control 
+
+    public void simulationInit() {
+        frontLeft.simulationInit();
+        frontRight.simulationInit();
+        backLeft.simulationInit();
+        backRight.simulationInit();
+    }
+
+    @Override
+    public void simulationPeriodic() {
+
     }
 }

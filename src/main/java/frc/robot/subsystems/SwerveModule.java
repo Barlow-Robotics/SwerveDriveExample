@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -13,9 +14,9 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
 
 public class SwerveModule {
 
@@ -85,18 +86,18 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getPosition())); 
+                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition())); 
     }
 
-    public SwerveModulePosition getPosition() {
+    public SwerveModulePosition getAbsolutePosition() {
         return new SwerveModulePosition(
-                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getPosition()));
+                driveEncoder.getAbsolutePosition(), new Rotation2d(turnEncoder.getAbsolutePosition()));
     }
 
     public void setDesiredState(SwerveModuleState desiredState) {
 
         // Optimize the reference state to avoid spinning further than 90 degrees
-        SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(turnEncoder.getPosition()));
+        SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(turnEncoder.getAbsolutePosition()));
 
         final double driveOutput = drivePIDController.calculate(driveEncoder.getVelocity(), state.speedMetersPerSecond);
         final double turnOutput = turnPIDController.calculate(turnEncoder.getPosition(), state.angle.getRadians());
@@ -109,5 +110,10 @@ public class SwerveModule {
     public void resetEncoders() {
         driveEncoder.setPosition(0);
         turnEncoder.setPosition(0);
+    }
+
+    public void simulationInit() {
+        REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
+        REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
     }
 }
