@@ -4,10 +4,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.DriveRobot;
 import frc.robot.subsystems.Drive;
 
@@ -49,7 +47,7 @@ public class RobotContainer {
 
     public final Drive driveSub = new Drive();
 
-    Joystick driverController;
+    PS4Controller driverController;
 
 
     public RobotContainer() {
@@ -63,7 +61,7 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        driverController = new Joystick(1);
+        driverController = new PS4Controller(1);
     }
 
     public Command getAutonomousCommand() {

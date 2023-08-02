@@ -6,73 +6,56 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
-
+import frc.robot.Constants.CanIDs;
 
 public class Drive extends SubsystemBase {
 
     /*******************************************************************************/
     /***** CONSTANTS *****/
-    
+
     public static final double MaxSpeed = 3.0; // meters per second
     public static final double MaxAngularSpeed = Math.PI; // 1/2 rotation per second
-    
+
     public static final boolean GyroReversed = false;
-    
-    public static final int FrontLeftDriveMotorID = 1; // EHP change
-    public static final int FrontLeftTurnMotorID = 2; // EHP change
-    public static final int FrontLeftDriveEncoderID = 0; // EHP change
-    public static final int FrontLeftTurnEncoderID = 2; // EHP change
-
-    public static final int FrontRightDriveMotorID = 3; // EHP change
-    public static final int FrontRightTurnMotorID = 4; // EHP change
-    public static final int FrontRightDriveEncoderID = 4; // EHP change
-    public static final int FrontRightTurnEncoderID = 6; // EHP change
-
-    public static final int BackLeftDriveMotorID = 5; // EHP change
-    public static final int BackLeftTurnMotorID = 6; // EHP change
-    public static final int BackLeftDriveEncoderID = 8; // EHP change 
-    public static final int BackLeftTurnEncoderID = 10; // EHP change
-
-    public static final int BackRightDriveMotorID = 7; // EHP change
-    public static final int BackRightTurnMotorID = 8; // EHP change 
-    public static final int BackRightDriveEncoderID = 12; // EHP change
-    public static final int BackRightTurnEncoderID = 14; // EHP change 
 
     /*******************************************************************************/
     /*******************************************************************************/
 
     private final SwerveModule frontLeft = new SwerveModule(
-            FrontLeftDriveMotorID,
-            FrontLeftTurnMotorID,
-            FrontLeftDriveEncoderID,
-            FrontLeftTurnEncoderID);
+            CanIDs.FrontLeftDriveMotorID,
+            CanIDs.FrontLeftTurnMotorID,
+            CanIDs.FrontLeftDriveEncoderID,
+            CanIDs.FrontLeftTurnEncoderID);
 
     private final SwerveModule frontRight = new SwerveModule(
-            FrontRightDriveMotorID,
-            FrontRightTurnMotorID,
-            FrontRightDriveEncoderID,
-            FrontRightTurnEncoderID);
+            CanIDs.FrontRightDriveMotorID,
+            CanIDs.FrontRightTurnMotorID,
+            CanIDs.FrontRightDriveEncoderID,
+            CanIDs.FrontRightTurnEncoderID);
 
     private final SwerveModule backLeft = new SwerveModule(
-            BackLeftDriveMotorID,
-            BackLeftTurnMotorID,
-            BackLeftDriveEncoderID,
-            BackLeftTurnEncoderID);
+            CanIDs.BackLeftDriveMotorID,
+            CanIDs.BackLeftTurnMotorID,
+            CanIDs.BackLeftDriveEncoderID,
+            CanIDs.BackLeftTurnEncoderID);
 
     private final SwerveModule backRight = new SwerveModule(
-            BackRightDriveMotorID,
-            BackRightTurnMotorID,
-            BackRightDriveEncoderID,
-            BackRightTurnEncoderID);
+            CanIDs.BackRightDriveMotorID,
+            CanIDs.BackRightTurnMotorID,
+            CanIDs.BackRightDriveEncoderID,
+            CanIDs.BackRightTurnEncoderID);
 
     private final Translation2d frontLeftLocation = new Translation2d(0.381, 0.381); // EHP change
     private final Translation2d frontRightLocation = new Translation2d(0.381, -0.381); // EHP change
@@ -82,9 +65,10 @@ public class Drive extends SubsystemBase {
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
             frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
-    private final Gyro gyro = new ADXRS450_Gyro();
+    private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+    private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
 
-   private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
+    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
             kinematics,
             gyro.getRotation2d(),
             new SwerveModulePosition[] {
@@ -109,7 +93,6 @@ public class Drive extends SubsystemBase {
                 });
     }
 
-
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
@@ -126,11 +109,11 @@ public class Drive extends SubsystemBase {
                 pose);
     }
 
-
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         var swerveModuleStates = kinematics.toSwerveModuleStates(
                 fieldRelative
-                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, gyro.getRotation2d())
+                        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot,
+                                gyro.getRotation2d())
                         : new ChassisSpeeds(xSpeed, ySpeed, rot));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MaxSpeed);
         frontLeft.setDesiredState(swerveModuleStates[0]);
@@ -172,7 +155,6 @@ public class Drive extends SubsystemBase {
     public double getTurnRate() {
         return gyro.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
     }
-    //velocity closed loop control 
 
     public void simulationInit() {
         frontLeft.simulationInit();
@@ -183,6 +165,11 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-
+        // Twist2d twist = kinematics.toTwist2d(
+        //         this.getLeftDistance() - lastLeftDistance,
+        //         this.getRightDistance() - lastRightDistance);
+        // NetworkTableInstance.getDefault().getEntry("drive/twist_angle")
+        //         .setDouble(Units.radiansToDegrees(twist.dtheta));
+        // gyroSim.setAngle(gyro.getAngle() - Units.radiansToDegrees(twist.dtheta));
     }
 }
