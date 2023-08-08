@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanIDs;
+import org.littletonrobotics.junction.Logger;
+
 
 public class Drive extends SubsystemBase {
 
@@ -78,6 +80,9 @@ public class Drive extends SubsystemBase {
                     backRight.getAbsolutePosition()
             });
 
+    private SwerveModulePosition[] previousPositions = new SwerveModulePosition[4] ;
+
+
     public Drive() {
     }
 
@@ -91,6 +96,9 @@ public class Drive extends SubsystemBase {
                         backLeft.getAbsolutePosition(),
                         backRight.getAbsolutePosition()
                 });
+
+        Logger.getInstance().recordOutput("Pose", odometry.getPoseMeters());
+
     }
 
     public Pose2d getPose() {
@@ -120,6 +128,9 @@ public class Drive extends SubsystemBase {
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
+
+        Logger.getInstance().recordOutput("SwerveStates/States", swerveModuleStates);
+
     }
 
     /**
@@ -165,11 +176,22 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        // Twist2d twist = kinematics.toTwist2d(
-        //         this.getLeftDistance() - lastLeftDistance,
-        //         this.getRightDistance() - lastRightDistance);
-        // NetworkTableInstance.getDefault().getEntry("drive/twist_angle")
-        //         .setDouble(Units.radiansToDegrees(twist.dtheta));
-        // gyroSim.setAngle(gyro.getAngle() - Units.radiansToDegrees(twist.dtheta));
+        var modulePositions = new SwerveModulePosition[] {
+                frontLeft.getAbsolutePosition(),
+                frontRight.getAbsolutePosition(),
+                backLeft.getAbsolutePosition(),
+                backRight.getAbsolutePosition()
+            } ;
+    
+        var moduleDeltas = new SwerveModulePosition[modulePositions.length];
+        for (int index = 0; index < modulePositions.length; index++) {
+                var current = modulePositions[index];
+                var previous = previousPositions[index];
+
+                moduleDeltas[index] = new SwerveModulePosition(current.distanceMeters - previous.distanceMeters, current.angle);
+                previous.distanceMeters = current.distanceMeters;
+        }
+        var twist = kinematics.toTwist2d(moduleDeltas);
+        gyroSim.setAngle( gyro.getAngle() - Units.radiansToDegrees(twist.dtheta)) ;
     }
 }

@@ -4,8 +4,11 @@
 
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.CANCoderFaults;
+import com.ctre.phoenix.sensors.CANCoderSimCollection;
 import com.ctre.phoenix.sensors.CANCoderStickyFaults;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
@@ -23,6 +26,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 
 public class SwerveModule {
 
@@ -139,15 +143,29 @@ public class SwerveModule {
         final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
 
         turnMotor.setVoltage(turnOutput + turnFF);
+
+        if ( RobotBase.isSimulation() ) {
+            // double angle = desiredState.angle.getRadians() ;
+            double angle = state.angle.getRadians() ;
+            CANCoderSimCollection encoderSim = turnCANCoder.getSimCollection() ;
+
+            int rawPosition = 0 ;
+            if ( angle < 0) {
+                rawPosition = 4096 + (int) ((angle / Math.PI ) * 2048.0) ;
+            } else {
+                rawPosition = (int) ((angle / Math.PI) * 2048.0)  ;
+            }
+            encoderSim.setRawPosition( rawPosition ) ;
+            Logger.getInstance().recordOutput("CANCoder " + turnCANCoder.getDeviceID(), turnCANCoder.getAbsolutePosition());
+            Logger.getInstance().recordOutput("CANCoder Raw " + turnCANCoder.getDeviceID(), rawPosition);
+            Logger.getInstance().recordOutput("Module Desired State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
+            Logger.getInstance().recordOutput("Module State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
+        }
+
     }
 
     public void resetEncoders() {
         driveEncoder.setPosition(0);
-    }
-
-    public void simulationInit() {
-        REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
-        REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
     }
 
     public void setDrivePID() {
@@ -171,4 +189,14 @@ public class SwerveModule {
         driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
         driveEncoder.setPositionConversionFactor(PositionConversionFactor);
     }
+
+    public void simulationInit() {
+        REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
+        REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
+    }
+    
+
+
+
+
 }
