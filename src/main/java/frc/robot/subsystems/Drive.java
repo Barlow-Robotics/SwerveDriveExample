@@ -38,25 +38,21 @@ public class Drive extends SubsystemBase {
     private final SwerveModule frontLeft = new SwerveModule(
             CanIDs.FrontLeftDriveMotorID,
             CanIDs.FrontLeftTurnMotorID,
-            CanIDs.FrontLeftDriveEncoderID,
             CanIDs.FrontLeftTurnEncoderID);
 
     private final SwerveModule frontRight = new SwerveModule(
             CanIDs.FrontRightDriveMotorID,
             CanIDs.FrontRightTurnMotorID,
-            CanIDs.FrontRightDriveEncoderID,
             CanIDs.FrontRightTurnEncoderID);
 
     private final SwerveModule backLeft = new SwerveModule(
             CanIDs.BackLeftDriveMotorID,
             CanIDs.BackLeftTurnMotorID,
-            CanIDs.BackLeftDriveEncoderID,
             CanIDs.BackLeftTurnEncoderID);
 
     private final SwerveModule backRight = new SwerveModule(
             CanIDs.BackRightDriveMotorID,
             CanIDs.BackRightTurnMotorID,
-            CanIDs.BackRightDriveEncoderID,
             CanIDs.BackRightTurnEncoderID);
 
     private final Translation2d frontLeftLocation = new Translation2d(0.381, 0.381); // EHP change
@@ -74,10 +70,10 @@ public class Drive extends SubsystemBase {
             kinematics,
             gyro.getRotation2d(),
             new SwerveModulePosition[] {
-                    frontLeft.getAbsolutePosition(),
-                    frontRight.getAbsolutePosition(),
-                    backLeft.getAbsolutePosition(),
-                    backRight.getAbsolutePosition()
+                    frontLeft.getPosition(),
+                    frontRight.getPosition(),
+                    backLeft.getPosition(),
+                    backRight.getPosition()
             });
 
     private SwerveModulePosition[] previousPositions = new SwerveModulePosition[4] ;
@@ -91,10 +87,10 @@ public class Drive extends SubsystemBase {
         odometry.update(
                 gyro.getRotation2d(),
                 new SwerveModulePosition[] {
-                        frontLeft.getAbsolutePosition(),
-                        frontRight.getAbsolutePosition(),
-                        backLeft.getAbsolutePosition(),
-                        backRight.getAbsolutePosition()
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
                 });
 
         Logger.getInstance().recordOutput("Pose", odometry.getPoseMeters());
@@ -109,10 +105,10 @@ public class Drive extends SubsystemBase {
         odometry.resetPosition(
                 gyro.getRotation2d(),
                 new SwerveModulePosition[] {
-                        frontLeft.getAbsolutePosition(),
-                        frontRight.getAbsolutePosition(),
-                        backLeft.getAbsolutePosition(),
-                        backRight.getAbsolutePosition()
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
                 },
                 pose);
     }
@@ -177,10 +173,10 @@ public class Drive extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         var modulePositions = new SwerveModulePosition[] {
-                frontLeft.getAbsolutePosition(),
-                frontRight.getAbsolutePosition(),
-                backLeft.getAbsolutePosition(),
-                backRight.getAbsolutePosition()
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
             } ;
     
         var moduleDeltas = new SwerveModulePosition[modulePositions.length];

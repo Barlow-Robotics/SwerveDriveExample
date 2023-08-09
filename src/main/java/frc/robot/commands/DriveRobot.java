@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drive;
@@ -14,10 +15,11 @@ public class DriveRobot extends CommandBase {
 
     Drive driveSub;
     PS4Controller driverController;
-    int controllerXSpeedID;
-    int controllerYSpeedID;
-    int controllerRotID;
+    int ControllerXSpeedID;
+    int ControllerYSpeedID;
+    int ControllerRotID;
     boolean FieldRelative;
+    double DeadBand = 0.005;
 
     public DriveRobot(
         Drive driveSub, 
@@ -29,8 +31,8 @@ public class DriveRobot extends CommandBase {
 
         this.driveSub = driveSub;
         this.driverController = driverController;
-        this.controllerXSpeedID = ControllerXSpeedID;
-        this.controllerYSpeedID = ControllerYSpeedID;
+        this.ControllerXSpeedID = ControllerXSpeedID;
+        this.ControllerYSpeedID = ControllerYSpeedID;
         this.FieldRelative = FieldRelative;
 
         addRequirements(driveSub);
@@ -42,27 +44,16 @@ public class DriveRobot extends CommandBase {
 
     @Override
     public void execute() {
-        double XSpeed = driverController.getLeftX(); // Might need to change to right
-        if (Math.abs(XSpeed) < 0.005) {
-            XSpeed = 0.0;
-        }
-
-        double YSpeed = driverController.getLeftY(); // Might need to change
-        if (Math.abs(YSpeed) < 0.005) {
-            YSpeed = 0.0;
-        }
-
-        double Rot = driverController.getRightX(); // Might need to change
-        if (Math.abs(Rot) < 0.005) {
-            Rot = 0.0;
-        }
+        double XSpeed = MathUtil.applyDeadband(driverController.getLeftX(), DeadBand);
+        double YSpeed = MathUtil.applyDeadband(driverController.getLeftY(), DeadBand);
+        double Rot = MathUtil.applyDeadband(driverController.getRightX(), DeadBand);
 
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);
 
+        /* LOGGING */
         Logger.getInstance().recordOutput("Yaw Input", Rot);
         Logger.getInstance().recordOutput("XSpeed", XSpeed);
         Logger.getInstance().recordOutput("YSpeed", YSpeed);
-
     }
 
     @Override

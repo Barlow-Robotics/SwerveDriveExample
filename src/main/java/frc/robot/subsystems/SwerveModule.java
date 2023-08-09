@@ -60,18 +60,16 @@ public class SwerveModule {
     private static final double VelocityConversionFactor = MetersPerRevolution * 60 * GearRatio; // From RPM to meters/second (?)
     private static final double PositionConversionFactor = MetersPerRevolution * GearRatio; // From revolutions to meters (?)
 
-    public static final int kEncoderCPR = 1024;
-    public static final double kDriveEncoderDistancePerPulse =
+    private static final int EncoderCPR = 1024;
+    private static final double DriveEncoderDistancePerPulse =
             // Assumes the encoders are directly mounted on the wheel shafts
-            (2 * WheelRadius * Math.PI) / (double) kEncoderCPR;
-
-    public static final double kTurningEncoderDistancePerPulse =
+            (2 * WheelRadius * Math.PI) / (double) EncoderCPR;
+    private static final double TurningEncoderDistancePerPulse =
             // Assumes the encoders are on a 1:1 reduction with the module shaft.
-            (2 * Math.PI) / (double) kEncoderCPR;
+            (2 * Math.PI) / (double) EncoderCPR;
 
-    public static final double kPModuleTurningController = 1;
-
-    public static final double kPModuleDriveController = 1;
+    private static final double kPModuleTurningController = 1;
+    private static final double kPModuleDriveController = 1;
 
     /**********************************************************************/
     /**********************************************************************/
@@ -82,19 +80,18 @@ public class SwerveModule {
     private final RelativeEncoder driveEncoder;
     private final WPI_CANCoder turnCANCoder;
 
-    public final SparkMaxPIDController drivePIDController;
-    public final ProfiledPIDController turnPIDController = new ProfiledPIDController(
+    private final SparkMaxPIDController drivePIDController;
+    private final ProfiledPIDController turnPIDController = new ProfiledPIDController(
             TurnKP,
             TurnKI,
             TurnKD,
             new TrapezoidProfile.Constraints(ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
 
-    public final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
+    private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
 
     public SwerveModule(
             int driveMotorID,
             int turningMotorID,
-            int driveEncoderID,
             int turnEncoderID) {
 
         driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
@@ -102,8 +99,8 @@ public class SwerveModule {
 
         driveEncoder = driveMotor.getEncoder();
         turnCANCoder = new WPI_CANCoder(turnEncoderID, "rio");
-        CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
 
+        CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
         turnCANCoder.configAllSettings(canCoderConfiguration);
 
         /* FAULT REPORTING */
@@ -124,7 +121,7 @@ public class SwerveModule {
                 driveEncoder.getVelocity(), new Rotation2d(turnCANCoder.getAbsolutePosition()));
     }
 
-    public SwerveModulePosition getAbsolutePosition() {
+    public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
                 driveEncoder.getPosition(), new Rotation2d(turnCANCoder.getAbsolutePosition()));
     }
@@ -161,7 +158,6 @@ public class SwerveModule {
             Logger.getInstance().recordOutput("Module Desired State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
             Logger.getInstance().recordOutput("Module State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
         }
-
     }
 
     public void resetEncoders() {
@@ -194,9 +190,4 @@ public class SwerveModule {
         REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
         REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
     }
-    
-
-
-
-
 }
