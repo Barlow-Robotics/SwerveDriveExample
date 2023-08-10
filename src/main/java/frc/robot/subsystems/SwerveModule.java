@@ -78,7 +78,7 @@ public class SwerveModule {
     private final CANSparkMax turnMotor;
 
     private final RelativeEncoder driveEncoder;
-    private final WPI_CANCoder turnCANCoder;
+    private final WPI_CANCoder turnEncoder;
 
     private final SparkMaxPIDController drivePIDController;
     private final ProfiledPIDController turnPIDController = new ProfiledPIDController(
@@ -98,16 +98,16 @@ public class SwerveModule {
         turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
 
         driveEncoder = driveMotor.getEncoder();
-        turnCANCoder = new WPI_CANCoder(turnEncoderID, "rio");
+        turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
 
         CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
-        turnCANCoder.configAllSettings(canCoderConfiguration);
+        turnEncoder.configAllSettings(canCoderConfiguration);
 
         /* FAULT REPORTING */
         CANCoderFaults faults = new CANCoderFaults();
-        turnCANCoder.getFaults(faults);
+        turnEncoder.getFaults(faults);
         CANCoderStickyFaults stickyFaults = new CANCoderStickyFaults();
-        turnCANCoder.getStickyFaults(stickyFaults);
+        turnEncoder.getStickyFaults(stickyFaults);
 
         drivePIDController = driveMotor.getPIDController();
 
@@ -118,23 +118,23 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                driveEncoder.getVelocity(), new Rotation2d(turnCANCoder.getAbsolutePosition()));
+                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition()));
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveEncoder.getPosition(), new Rotation2d(turnCANCoder.getAbsolutePosition()));
+                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition()));
     }
 
     public void setDesiredState(SwerveModuleState desiredState) {
 
         // Optimize the reference state to avoid spinning further than 90 degrees
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
-                new Rotation2d(turnCANCoder.getAbsolutePosition()));
+                new Rotation2d(turnEncoder.getAbsolutePosition()));
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        final double turnOutput = turnPIDController.calculate(turnCANCoder.getAbsolutePosition(),
+        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
                 state.angle.getRadians());
 
         final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
@@ -144,7 +144,7 @@ public class SwerveModule {
         if ( RobotBase.isSimulation() ) {
             // double angle = desiredState.angle.getRadians() ;
             double angle = state.angle.getRadians() ;
-            CANCoderSimCollection encoderSim = turnCANCoder.getSimCollection() ;
+            CANCoderSimCollection encoderSim = turnEncoder.getSimCollection() ;
 
             int rawPosition = 0 ;
             if ( angle < 0) {
@@ -153,10 +153,10 @@ public class SwerveModule {
                 rawPosition = (int) ((angle / Math.PI) * 2048.0)  ;
             }
             encoderSim.setRawPosition( rawPosition ) ;
-            Logger.getInstance().recordOutput("CANCoder " + turnCANCoder.getDeviceID(), turnCANCoder.getAbsolutePosition());
-            Logger.getInstance().recordOutput("CANCoder Raw " + turnCANCoder.getDeviceID(), rawPosition);
-            Logger.getInstance().recordOutput("Module Desired State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
-            Logger.getInstance().recordOutput("Module State Angle" + turnCANCoder.getDeviceID(), desiredState.angle.getRadians());
+            Logger.getInstance().recordOutput("CANCoder " + turnEncoder.getDeviceID(), turnEncoder.getAbsolutePosition());
+            Logger.getInstance().recordOutput("CANCoder Raw " + turnEncoder.getDeviceID(), rawPosition);
+            Logger.getInstance().recordOutput("Module Desired State Angle" + turnEncoder.getDeviceID(), desiredState.angle.getRadians());
+            Logger.getInstance().recordOutput("Module State Angle" + turnEncoder.getDeviceID(), desiredState.angle.getRadians());
         }
     }
 
