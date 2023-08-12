@@ -7,9 +7,7 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
-import com.ctre.phoenix.sensors.CANCoderFaults;
 import com.ctre.phoenix.sensors.CANCoderSimCollection;
-import com.ctre.phoenix.sensors.CANCoderStickyFaults;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVPhysicsSim;
@@ -27,6 +25,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.Constants;
 
 public class SwerveModule {
 
@@ -34,11 +33,9 @@ public class SwerveModule {
     /***** CONSTANTS *****/
 
     private static final double WheelRadius = Units.inchesToMeters(2.0);
-    private static final int EncoderResolution = 4096;
+    private static final double WheelCircumference = Units.inchesToMeters(2.0 * WheelRadius * Math.PI);
 
-    private static final double ModuleMaxAngularVelocity = Drive.MaxAngularSpeed;
-    private static final double ModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
-
+    /* DRIVE ENCODER */
     private static final double DriveKP = 1; // Need to change
     private static final double DriveKI = 0;
     private static final double DriveKD = 0;
@@ -46,30 +43,21 @@ public class SwerveModule {
     private static final double DriveFF = 0.000015;
     private static final double DriveMinOutput = -1;
     private static final double DriveMaxOutput = 1;
-    private static final double MaxRPM = 5700;
+
+    private static final double GearRatio = 8.14;
+    private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
+    // private static final double PositionConversionFactor = WheelCircumference /
+    // GearRatio;
+    private static final double PositionConversionFactor = 1000 * WheelCircumference / GearRatio;
+
+    /* TURN ENCODER */
+    private static final int CANCoderResolution = 4096;
 
     private static final double TurnKP = 1; // Need to change
     private static final double TurnKI = 0;
     private static final double TurnKD = 0;
-
-    private static final double MaxModuleAngularSpeedRadiansPerSecond = 2 * Math.PI;
-    private static final double MaxModuleAngularAccelerationRadiansPerSecondSquared = 2 * Math.PI;
-
-    private static final double GearRatio = 1; // Need to change
-    private static final double MetersPerRevolution = 2 * WheelRadius * Math.PI;
-    private static final double VelocityConversionFactor = MetersPerRevolution * 60 * GearRatio; // From RPM to meters/second (?)
-    private static final double PositionConversionFactor = MetersPerRevolution * GearRatio; // From revolutions to meters (?)
-
-    private static final int EncoderCPR = 1024;
-    private static final double DriveEncoderDistancePerPulse =
-            // Assumes the encoders are directly mounted on the wheel shafts
-            (2 * WheelRadius * Math.PI) / (double) EncoderCPR;
-    private static final double TurningEncoderDistancePerPulse =
-            // Assumes the encoders are on a 1:1 reduction with the module shaft.
-            (2 * Math.PI) / (double) EncoderCPR;
-
-    private static final double kPModuleTurningController = 1;
-    private static final double kPModuleDriveController = 1;
+    private static final double ModuleMaxAngularVelocity = Drive.MaxAngularSpeed;
+    private static final double ModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
     /**********************************************************************/
     /**********************************************************************/
@@ -103,12 +91,6 @@ public class SwerveModule {
         CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
         turnEncoder.configAllSettings(canCoderConfiguration);
 
-        /* FAULT REPORTING */
-        CANCoderFaults faults = new CANCoderFaults();
-        turnEncoder.getFaults(faults);
-        CANCoderStickyFaults stickyFaults = new CANCoderStickyFaults();
-        turnEncoder.getStickyFaults(stickyFaults);
-
         drivePIDController = driveMotor.getPIDController();
 
         setDrivePID();
@@ -141,22 +123,25 @@ public class SwerveModule {
 
         turnMotor.setVoltage(turnOutput + turnFF);
 
-        if ( RobotBase.isSimulation() ) {
+        if (RobotBase.isSimulation()) {
             // double angle = desiredState.angle.getRadians() ;
-            double angle = state.angle.getRadians() ;
-            CANCoderSimCollection encoderSim = turnEncoder.getSimCollection() ;
+            double angle = state.angle.getRadians();
+            CANCoderSimCollection encoderSim = turnEncoder.getSimCollection();
 
-            int rawPosition = 0 ;
-            if ( angle < 0) {
-                rawPosition = 4096 + (int) ((angle / Math.PI ) * 2048.0) ;
+            int rawPosition = 0;
+            if (angle < 0) {
+                rawPosition = 4096 + (int) ((angle / Math.PI) * 2048.0);
             } else {
-                rawPosition = (int) ((angle / Math.PI) * 2048.0)  ;
+                rawPosition = (int) ((angle / Math.PI) * 2048.0);
             }
-            encoderSim.setRawPosition( rawPosition ) ;
-            Logger.getInstance().recordOutput("CANCoder " + turnEncoder.getDeviceID(), turnEncoder.getAbsolutePosition());
+            encoderSim.setRawPosition(rawPosition);
+            Logger.getInstance().recordOutput("CANCoder " + turnEncoder.getDeviceID(),
+                    turnEncoder.getAbsolutePosition());
             Logger.getInstance().recordOutput("CANCoder Raw " + turnEncoder.getDeviceID(), rawPosition);
-            Logger.getInstance().recordOutput("Module Desired State Angle" + turnEncoder.getDeviceID(), desiredState.angle.getRadians());
-            Logger.getInstance().recordOutput("Module State Angle" + turnEncoder.getDeviceID(), desiredState.angle.getRadians());
+            Logger.getInstance().recordOutput("Module Desired State Angle" + turnEncoder.getDeviceID(),
+                    desiredState.angle.getRadians());
+            Logger.getInstance().recordOutput("Module State Angle" + turnEncoder.getDeviceID(),
+                    desiredState.angle.getRadians());
         }
     }
 

@@ -5,6 +5,9 @@
 package frc.robot;
 
 public class Constants {
+
+    public static final double SecondsPerMinute = 60;
+
     public class CanIDs {
         /* DRIVE */
         public static final int FrontLeftDriveMotorID = 1; // EHP change
