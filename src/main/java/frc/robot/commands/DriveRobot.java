@@ -10,6 +10,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.SwerveModule;
 
 public class DriveRobot extends CommandBase {
 
@@ -19,7 +20,7 @@ public class DriveRobot extends CommandBase {
     int ControllerYSpeedID;
     int ControllerRotID;
     boolean FieldRelative;
-    double DeadBand = 0.005;
+    double DeadBand = 0.01;
 
     public DriveRobot(
         Drive driveSub, 
@@ -44,16 +45,19 @@ public class DriveRobot extends CommandBase {
 
     @Override
     public void execute() {
-        double XSpeed = MathUtil.applyDeadband(driverController.getLeftX(), DeadBand);
-        double YSpeed = MathUtil.applyDeadband(driverController.getLeftY(), DeadBand);
-        double Rot = MathUtil.applyDeadband(driverController.getRightX(), DeadBand);
+        double XSpeed = MathUtil.applyDeadband(-driverController.getLeftY(), DeadBand);
+        double YSpeed = MathUtil.applyDeadband(-driverController.getLeftX(), DeadBand);
+        double Rot = MathUtil.applyDeadband(-driverController.getRightX(), DeadBand);
 
+        XSpeed *= 5700;
+        YSpeed *= 5700;
+        
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);
 
         /* LOGGING */
         Logger.getInstance().recordOutput("Yaw Input", Rot);
-        Logger.getInstance().recordOutput("XSpeed", XSpeed);
-        Logger.getInstance().recordOutput("YSpeed", YSpeed);
+        Logger.getInstance().recordOutput("XSpeed", YSpeed);
+        Logger.getInstance().recordOutput("YSpeed", XSpeed);
     }
 
     @Override

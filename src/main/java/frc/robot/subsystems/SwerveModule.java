@@ -49,6 +49,8 @@ public class SwerveModule {
     // private static final double PositionConversionFactor = WheelCircumference /
     // GearRatio;
     private static final double PositionConversionFactor = 1000 * WheelCircumference / GearRatio;
+    private static final double MaxRPM = 5700;
+    public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
 
     /* TURN ENCODER */
     private static final int CANCoderResolution = 4096;
@@ -69,11 +71,7 @@ public class SwerveModule {
     private final WPI_CANCoder turnEncoder;
 
     private final SparkMaxPIDController drivePIDController;
-    private final ProfiledPIDController turnPIDController = new ProfiledPIDController(
-            TurnKP,
-            TurnKI,
-            TurnKD,
-            new TrapezoidProfile.Constraints(ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
+    private final SparkMaxPIDController turnPIDController;
 
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
 
@@ -92,6 +90,7 @@ public class SwerveModule {
         turnEncoder.configAllSettings(canCoderConfiguration);
 
         drivePIDController = driveMotor.getPIDController();
+        turnPIDController = turnMotor.getPIDController();
 
         setDrivePID();
         setMotorDefaults();
@@ -116,13 +115,15 @@ public class SwerveModule {
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
-                state.angle.getRadians());
+        // final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
+        //         state.angle.getRadians());
 
-        final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
+        // final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
 
-        turnMotor.setVoltage(turnOutput + turnFF);
+        // turnMotor.setVoltage(turnOutput + turnFF);
 
+        turnPIDController.setReference(state.angle.getRadians(), ControlType.kPosition);
+        
         if (RobotBase.isSimulation()) {
             // double angle = desiredState.angle.getRadians() ;
             double angle = state.angle.getRadians();

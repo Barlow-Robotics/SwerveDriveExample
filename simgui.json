@@ -1,0 +1,41 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [6]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo"
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "SwerveStates": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "height": 584
+        }
+      ],
+      "window": {
+        "visible": false
+      }
+    }
+  }
+}

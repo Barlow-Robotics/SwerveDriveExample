@@ -165,6 +165,11 @@ public class Drive extends SubsystemBase {
         frontRight.simulationInit();
         backLeft.simulationInit();
         backRight.simulationInit();
+
+        previousPositions[0] = frontLeft.getPosition();
+        previousPositions[1] = frontRight.getPosition();
+        previousPositions[2] = backLeft.getPosition();
+        previousPositions[3] = backRight.getPosition();
     }
 
     @Override
