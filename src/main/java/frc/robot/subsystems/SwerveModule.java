@@ -41,8 +41,6 @@ public class SwerveModule {
     private static final double DriveKD = 0;
     private static final double DriveIZone = 0;
     private static final double DriveFF = 0.000015;
-    private static final double DriveMinOutput = -1;
-    private static final double DriveMaxOutput = 1;
 
     private static final double GearRatio = 8.14;
     private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
@@ -156,7 +154,6 @@ public class SwerveModule {
         drivePIDController.setD(DriveKD);
         drivePIDController.setIZone(DriveIZone);
         drivePIDController.setFF(DriveFF);
-        drivePIDController.setOutputRange(DriveMinOutput, DriveMaxOutput);
     }
 
     public void setMotorDefaults() {

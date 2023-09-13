@@ -20,7 +20,8 @@ public class DriveRobot extends CommandBase {
     int ControllerYSpeedID;
     int ControllerRotID;
     boolean FieldRelative;
-    double DeadBand = 0.01;
+    double DeadBand = 0.05;
+    int MaxRPM = 5676; 
 
     public DriveRobot(
         Drive driveSub, 
@@ -49,8 +50,8 @@ public class DriveRobot extends CommandBase {
         double YSpeed = MathUtil.applyDeadband(-driverController.getLeftX(), DeadBand);
         double Rot = MathUtil.applyDeadband(-driverController.getRightX(), DeadBand);
 
-        XSpeed *= 5700;
-        YSpeed *= 5700;
+        XSpeed *= MaxRPM;
+        YSpeed *= MaxRPM;
         
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);
 
