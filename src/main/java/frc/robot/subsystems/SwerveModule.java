@@ -16,13 +16,11 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
@@ -49,6 +47,7 @@ public class SwerveModule {
     private static final double PositionConversionFactor = 1000 * WheelCircumference / GearRatio;
     private static final double MaxRPM = 5700;
     public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
+
 
     /* TURN ENCODER */
     private static final int CANCoderResolution = 4096;

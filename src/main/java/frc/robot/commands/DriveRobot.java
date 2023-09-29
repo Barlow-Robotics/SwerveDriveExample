@@ -7,22 +7,27 @@ package frc.robot.commands;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.SwerveModule;
 
 public class DriveRobot extends CommandBase {
 
     Drive driveSub;
     PS4Controller driverController;
+
     int ControllerXSpeedID;
     int ControllerYSpeedID;
     int ControllerRotID;
-    boolean FieldRelative;
-    double DeadBand = 0.05;
-    int MaxRPM = 5676; 
 
+    boolean FieldRelative;
+
+    double DeadBand = 0.05;
+    double MaxVelocity = 4.0; //meters per second //value is chosen, not calculated
+    double MaxRotVelocity = 2.0; //meters per second
+    int MaxRPM = 5676;
+    
     public DriveRobot(
         Drive driveSub, 
         PS4Controller driverController, 
@@ -50,8 +55,9 @@ public class DriveRobot extends CommandBase {
         double YSpeed = MathUtil.applyDeadband(-driverController.getLeftX(), DeadBand);
         double Rot = MathUtil.applyDeadband(-driverController.getRightX(), DeadBand);
 
-        XSpeed *= MaxRPM;
-        YSpeed *= MaxRPM;
+        XSpeed *= MaxVelocity;
+        YSpeed *= MaxVelocity;
+        Rot *= MaxRotVelocity;
         
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);
 

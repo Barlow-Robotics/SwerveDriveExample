@@ -24,7 +24,7 @@ public class Drive extends SubsystemBase {
     /*******************************************************************************/
     /***** CONSTANTS *****/
 
-    public static final double MaxSpeed = 3.0; // meters per second
+    public static final double MaxSpeed = 4.0; // meters per second
     public static final double MaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     public static final boolean GyroReversed = false;
