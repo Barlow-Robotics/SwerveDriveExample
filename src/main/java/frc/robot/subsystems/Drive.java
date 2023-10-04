@@ -111,19 +111,21 @@ public class Drive extends SubsystemBase {
     }
 
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-        var swerveModuleStates = kinematics.toSwerveModuleStates(
+        var swerveModuleDesiredStates = kinematics.toSwerveModuleStates(
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot,
                                 gyro.getRotation2d())
                         : new ChassisSpeeds(xSpeed, ySpeed, rot));
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MaxSpeed);
-        frontLeft.setDesiredState(swerveModuleStates[0]);
-        frontRight.setDesiredState(swerveModuleStates[1]);
-        backLeft.setDesiredState(swerveModuleStates[2]);
-        backRight.setDesiredState(swerveModuleStates[3]);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleDesiredStates, MaxSpeed);
+        frontLeft.setDesiredState(swerveModuleDesiredStates[0]);
+        frontRight.setDesiredState(swerveModuleDesiredStates[1]);
+        backLeft.setDesiredState(swerveModuleDesiredStates[2]);
+        backRight.setDesiredState(swerveModuleDesiredStates[3]);
 
-        Logger.getInstance().recordOutput("SwerveStates/States", swerveModuleStates);
+        Logger.getInstance().recordOutput("SwerveStates/DesiredStates", swerveModuleDesiredStates);
 
+        SwerveModuleState[] swerveModuleActualStates = new SwerveModuleState[] {frontLeft.getState(), frontRight.getState(), backLeft.getState(), backRight.getState()};
+        Logger.getInstance().recordOutput("SwerveStates/ActualStates", swerveModuleActualStates);
     }
 
     /**

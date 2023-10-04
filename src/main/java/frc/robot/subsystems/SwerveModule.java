@@ -6,8 +6,10 @@ package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.sensors.CANCoderSimCollection;
+import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVPhysicsSim;
@@ -16,22 +18,24 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
 
 public class SwerveModule {
-
     /**********************************************************************/
     /***** CONSTANTS *****/
 
     private static final double WheelRadius = Units.inchesToMeters(2.0);
-    private static final double WheelCircumference = Units.inchesToMeters(2.0 * WheelRadius * Math.PI);
+    private static final double WheelCircumference = 2.0 * WheelRadius * Math.PI;
 
     /* DRIVE ENCODER */
     private static final double DriveKP = 1; // Need to change
@@ -44,14 +48,16 @@ public class SwerveModule {
     private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
     // private static final double PositionConversionFactor = WheelCircumference /
     // GearRatio;
-    private static final double PositionConversionFactor = 1000 * WheelCircumference / GearRatio;
+    
+
+
     private static final double MaxRPM = 5700;
     public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
 
 
     /* TURN ENCODER */
     private static final int CANCoderResolution = 4096;
-
+    private static final double PositionConversionFactor = WheelCircumference / GearRatio;
     private static final double TurnKP = 1; // Need to change
     private static final double TurnKI = 0;
     private static final double TurnKD = 0;
@@ -68,7 +74,9 @@ public class SwerveModule {
     private final WPI_CANCoder turnEncoder;
 
     private final SparkMaxPIDController drivePIDController;
-    private final SparkMaxPIDController turnPIDController;
+    // private final SparkMaxPIDController turnPIDController;
+
+    private final ProfiledPIDController turnPIDController;
 
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
 
@@ -84,10 +92,23 @@ public class SwerveModule {
         turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
 
         CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
+        canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180; // BW sets the sensor to be [-180, 180] rather then [0, 360]
+        
+        canCoderConfiguration.magnetOffsetDegrees = 0; // BW need to use constant
+        canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
+        canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
+        
+
         turnEncoder.configAllSettings(canCoderConfiguration);
 
         drivePIDController = driveMotor.getPIDController();
-        turnPIDController = turnMotor.getPIDController();
+        // turnPIDController = turnMotor.getPIDController();
+        turnPIDController = new ProfiledPIDController(
+            1,
+            0,
+            0,
+            new TrapezoidProfile.Constraints(
+                ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
 
         setDrivePID();
         setMotorDefaults();
@@ -112,15 +133,17 @@ public class SwerveModule {
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        // final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
-        //         state.angle.getRadians());
+        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
+                state.angle.getRadians());
 
-        // final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
+        final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
 
-        // turnMotor.setVoltage(turnOutput + turnFF);
+        turnMotor.setVoltage(turnOutput + turnFF);
 
-        turnPIDController.setReference(state.angle.getRadians(), ControlType.kPosition);
-        
+        // turnPIDController.setReference(state.angle.getRadians(), ControlType.kPosition);
+        // turnPIDController.setGoal(state.angle.getRadians());
+        // turnPIDController.calculate(turnEncoder.getAbsolutePosition());
+
         if (RobotBase.isSimulation()) {
             // double angle = desiredState.angle.getRadians() ;
             double angle = state.angle.getRadians();
@@ -164,8 +187,12 @@ public class SwerveModule {
     }
 
     public void setEncoderDefaults() {
+        double localPositionConversionFactor = PositionConversionFactor;
+        if (RobotBase.isSimulation()) {
+            localPositionConversionFactor *= 1000;
+        }
         driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
-        driveEncoder.setPositionConversionFactor(PositionConversionFactor);
+        driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
     }
 
     public void simulationInit() {
