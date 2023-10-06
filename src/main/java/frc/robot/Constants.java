@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+
 public class Constants {
 
     public static final double SecondsPerMinute = 60;
@@ -25,5 +28,16 @@ public class Constants {
         public static final int BackRightDriveMotorID = 7; // EHP change
         public static final int BackRightTurnMotorID = 8; // EHP change 
         public static final int BackRightTurnEncoderID = 14; // EHP change 
+    }
+    public class DriveConstants {
+        public static final double kPhysicalMaxSpeedMetersPerSecond = 5; // Might need to change
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI; // Might need to change
+    }
+    public class AutoConstants {
+        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 4; // Might need to change
+        public static final double kMaxAngularSpeedRadiansPerSecond = 
+                DriveConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 10; // Might need to change
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3; // Might need to change
+        public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4;
     }
 }

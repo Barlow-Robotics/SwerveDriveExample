@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanIDs;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.Constants;
 
 
 public class Drive extends SubsystemBase {
@@ -28,7 +29,15 @@ public class Drive extends SubsystemBase {
     public static final double MaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     public static final boolean GyroReversed = false;
+    public static final double kTrackWidth = 0.762;
 
+    // Distance between right and left wheels
+    public static final double kWheelBase = 0.762;
+    public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
     /*******************************************************************************/
     /*******************************************************************************/
 
@@ -51,14 +60,6 @@ public class Drive extends SubsystemBase {
             CanIDs.BackRightDriveMotorID,
             CanIDs.BackRightTurnMotorID,
             CanIDs.BackRightTurnEncoderID);
-
-    private final Translation2d frontLeftLocation = new Translation2d(0.381, 0.381); // EHP change
-    private final Translation2d frontRightLocation = new Translation2d(0.381, -0.381); // EHP change
-    private final Translation2d backLeftLocation = new Translation2d(-0.381, 0.381); // EHP change
-    private final Translation2d backRightLocation = new Translation2d(-0.381, -0.381); // EHP change
-
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-            frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
     private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
     private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
@@ -97,6 +98,7 @@ public class Drive extends SubsystemBase {
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
+    
 
     public void resetOdometry(Pose2d pose) {
         odometry.resetPosition(
@@ -149,6 +151,12 @@ public class Drive extends SubsystemBase {
         frontRight.resetEncoders();
         backRight.resetEncoders();
     }
+    public void stopModules() {
+        frontLeft.stop();
+        frontRight.stop();
+        backLeft.stop();
+        backRight.stop();
+    }
 
     public void zeroHeading() {
         gyro.reset();
@@ -194,4 +202,5 @@ public class Drive extends SubsystemBase {
         var twist = kinematics.toTwist2d(moduleDeltas);
         gyroSim.setAngle( gyro.getAngle() - Units.radiansToDegrees(twist.dtheta)) ;
     }
+    
 }

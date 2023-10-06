@@ -185,6 +185,10 @@ public class SwerveModule {
         driveMotor.setIdleMode(IdleMode.kBrake);
         turnMotor.setIdleMode(IdleMode.kBrake);
     }
+    public void stop() {
+        driveMotor.set(0);
+        turnMotor.set(0);
+    }
 
     public void setEncoderDefaults() {
         double localPositionConversionFactor = PositionConversionFactor;
