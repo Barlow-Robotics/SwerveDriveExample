@@ -90,9 +90,9 @@ public class RobotContainer {
         PathPlannerTrajectory traj2 = PathPlanner.generatePath(
             new PathConstraints(3, 16), 
             new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(5.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(5.0, 3.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
             new PathPoint(new Translation2d(10.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(15.0, 0.0), Rotation2d.fromDegrees(-45), Rotation2d.fromDegrees(0)) // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(15.0, 7.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-45)) // position, heading(direction of travel), holonomic rotation
         );
         // Logger.getInstance().recordOutput("PP Auto Path", traj2);
 

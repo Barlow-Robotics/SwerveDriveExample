@@ -13,21 +13,31 @@ public class Constants {
 
     public class CanIDs {
         /* DRIVE */
-        public static final int FrontLeftDriveMotorID = 1; // EHP change
-        public static final int FrontLeftTurnMotorID = 2; // EHP change
-        public static final int FrontLeftTurnEncoderID = 2; // EHP change
 
-        public static final int FrontRightDriveMotorID = 3; // EHP change
-        public static final int FrontRightTurnMotorID = 4; // EHP change
-        public static final int FrontRightTurnEncoderID = 6; // EHP change
+        // LeftFront = 1
+        // rightFront = 2
+        // leftBack = 3
+        // rightBack = 4
 
-        public static final int BackLeftDriveMotorID = 5; // EHP change
-        public static final int BackLeftTurnMotorID = 6; // EHP change
-        public static final int BackLeftTurnEncoderID = 10; // EHP change
+        // Encoder = 1{locationOnBot}
+        public static final int FrontLeftTurnEncoderID = 11;
+        public static final int FrontRightTurnEncoderID = 12;
+        public static final int BackLeftTurnEncoderID = 13;
+        public static final int BackRightTurnEncoderID = 14;
 
-        public static final int BackRightDriveMotorID = 7; // EHP change
-        public static final int BackRightTurnMotorID = 8; // EHP change 
-        public static final int BackRightTurnEncoderID = 14; // EHP change 
+        // BackMotorID = 2{locationOnBot} // Base
+        public static final int FrontLeftDriveMotorID = 21;
+        public static final int FrontRightDriveMotorID = 22;
+        public static final int BackLeftDriveMotorID = 23;
+        public static final int BackRightDriveMotorID = 24;
+
+        // TurnMotorID = 3{locationOnBot} // Side
+        public static final int FrontLeftTurnMotorID = 31;
+        public static final int FrontRightTurnMotorID = 32;
+        public static final int BackLeftTurnMotorID = 33;
+        public static final int BackRightTurnMotorID = 34;
+
+        /* DRIVE */
     }
     public class DriveConstants {
         public static final double kPhysicalMaxSpeedMetersPerSecond = 5; // Might need to change
