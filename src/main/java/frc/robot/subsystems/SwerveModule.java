@@ -38,11 +38,15 @@ public class SwerveModule {
     private static final double WheelCircumference = 2.0 * WheelRadius * Math.PI;
 
     /* DRIVE ENCODER */
-    private static final double DriveKP = 1; // Need to change
-    private static final double DriveKI = 0;
+    private static final double DriveKP = 2e-5; // Need to change
+    // private static final double DriveKP = 0; // Need to change
+    private static final double DriveKI = 0.0000002;
     private static final double DriveKD = 0;
-    private static final double DriveIZone = 0;
-    private static final double DriveFF = 0.000015;
+    // private static final double DriveIZone = 0;
+    private static final double DriveIZone = 50;
+    private static final double DriveFF = 1.0 / 5820.0 ;
+    // private static final double DriveFF = 0.01;
+
 
     private static final double GearRatio = 8.14;
     private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
@@ -51,7 +55,7 @@ public class SwerveModule {
     
 
 
-    private static final double MaxRPM = 5700;
+    private static final double MaxRPM = 5820;
     public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
 
 
@@ -66,6 +70,7 @@ public class SwerveModule {
 
     /**********************************************************************/
     /**********************************************************************/
+    // private boolean reversedValue;  
 
     private final CANSparkMax driveMotor;
     private final CANSparkMax turnMotor;
@@ -79,30 +84,50 @@ public class SwerveModule {
     private final ProfiledPIDController turnPIDController;
 
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
-
     public SwerveModule(
             int driveMotorID,
             int turningMotorID,
-            int turnEncoderID) {
+            int turnEncoderID,
+            double magnetOffset,
+            boolean reversed) {
 
+        // Set up drive motor and encoder
         driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
-        turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
+        driveMotor.restoreFactoryDefaults();
+        driveMotor.setIdleMode(IdleMode.kBrake);
+        driveMotor.setInverted(reversed);
 
         driveEncoder = driveMotor.getEncoder();
-        turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
 
-        CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
-        canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180; // BW sets the sensor to be [-180, 180] rather then [0, 360]
-        
-        canCoderConfiguration.magnetOffsetDegrees = 0; // BW need to use constant
-        canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
-        canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
-        
-
-        turnEncoder.configAllSettings(canCoderConfiguration);
+        double localPositionConversionFactor = PositionConversionFactor;
+        if (RobotBase.isSimulation()) {
+            localPositionConversionFactor *= 1000;
+        }
+        driveEncoder.setVelocityConversionFactor(1.0);
+        // driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
+        // driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
 
         drivePIDController = driveMotor.getPIDController();
-        // turnPIDController = turnMotor.getPIDController();
+        drivePIDController.setP(DriveKP);
+        drivePIDController.setI(DriveKI);
+        drivePIDController.setD(DriveKD);
+        drivePIDController.setIZone(DriveIZone);
+        drivePIDController.setFF(DriveFF);
+        drivePIDController.setOutputRange(-1, 1);
+
+        // Set up turn motor and encoder
+        turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
+        turnMotor.setIdleMode(IdleMode.kBrake);
+        turnMotor.restoreFactoryDefaults();
+
+        turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
+        CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
+        canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180; // BW sets the sensor to be [-180, 180] rather then [0, 360]
+        canCoderConfiguration.magnetOffsetDegrees = magnetOffset; 
+        canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
+        canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
+        turnEncoder.configAllSettings(canCoderConfiguration);
+
         turnPIDController = new ProfiledPIDController(
             1,
             0,
@@ -110,9 +135,6 @@ public class SwerveModule {
             new TrapezoidProfile.Constraints(
                 ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
 
-        setDrivePID();
-        setMotorDefaults();
-        setEncoderDefaults();
     }
 
     public SwerveModuleState getState() {
@@ -120,25 +142,38 @@ public class SwerveModule {
                 driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition()));
     }
 
+
+
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
                 driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition()));
     }
 
+
+
     public void setDesiredState(SwerveModuleState desiredState) {
 
         // Optimize the reference state to avoid spinning further than 90 degrees
+
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
                 new Rotation2d(turnEncoder.getAbsolutePosition()));
 
-        drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
+        drivePIDController.setReference(1000, ControlType.kVelocity);
 
-        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
-                state.angle.getRadians());
+        Logger.getInstance().recordOutput("Drive " + driveMotor.getDeviceId() + " velocity", driveMotor.getEncoder().getVelocity());
 
-        final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
 
-        turnMotor.setVoltage(turnOutput + turnFF);
+        // drivePIDController.setReference(state.speedMetersPerSecond / VelocityConversionFactor, ControlType.kVelocity);
+
+        // final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
+        //         state.angle.getRadians());
+
+        // final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
+        // turnMotor.setVoltage(turnOutput + turnFF);
+
+        turnMotor.setVoltage(0.0);
+
+
 
         // turnPIDController.setReference(state.angle.getRadians(), ControlType.kPosition);
         // turnPIDController.setGoal(state.angle.getRadians());
@@ -170,34 +205,36 @@ public class SwerveModule {
         driveEncoder.setPosition(0);
     }
 
-    public void setDrivePID() {
-        drivePIDController.setP(DriveKP);
-        drivePIDController.setI(DriveKI);
-        drivePIDController.setD(DriveKD);
-        drivePIDController.setIZone(DriveIZone);
-        drivePIDController.setFF(DriveFF);
-    }
+    // public void setDrivePID() {
+    //     drivePIDController.setP(DriveKP);
+    //     drivePIDController.setI(DriveKI);
+    //     drivePIDController.setD(DriveKD);
+    //     drivePIDController.setIZone(DriveIZone);
+    //     drivePIDController.setFF(DriveFF);
+    //     drivePIDController.setOutputRange(-1, 1);
+    // }
 
-    public void setMotorDefaults() {
-        driveMotor.restoreFactoryDefaults();
-        turnMotor.restoreFactoryDefaults();
+    // public void setMotorDefaults() {
+    //     driveMotor.restoreFactoryDefaults();
+    //     turnMotor.restoreFactoryDefaults();
 
-        driveMotor.setIdleMode(IdleMode.kBrake);
-        turnMotor.setIdleMode(IdleMode.kBrake);
-    }
+    //     driveMotor.setIdleMode(IdleMode.kBrake);
+    //     turnMotor.setIdleMode(IdleMode.kBrake);
+    // }
+
     public void stop() {
         driveMotor.set(0);
         turnMotor.set(0);
     }
 
-    public void setEncoderDefaults() {
-        double localPositionConversionFactor = PositionConversionFactor;
-        if (RobotBase.isSimulation()) {
-            localPositionConversionFactor *= 1000;
-        }
-        driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
-        driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
-    }
+    // public void setEncoderDefaults() {
+    //     double localPositionConversionFactor = PositionConversionFactor;
+    //     if (RobotBase.isSimulation()) {
+    //         localPositionConversionFactor *= 1000;
+    //     }
+    //     driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
+    //     driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
+    // }
 
     public void simulationInit() {
         REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));

@@ -22,7 +22,7 @@ public class Constants {
         // Encoder = 1{locationOnBot}
         public static final int FrontLeftTurnEncoderID = 11;
         public static final int FrontRightTurnEncoderID = 12;
-        public static final int BackLeftTurnEncoderID = 13;
+        public static final int BackLeftTurnEncoderID = 50;
         public static final int BackRightTurnEncoderID = 14;
 
         // BackMotorID = 2{locationOnBot} // Base

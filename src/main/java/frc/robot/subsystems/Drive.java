@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -13,10 +15,14 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanIDs;
 import org.littletonrobotics.junction.Logger;
+
+import com.kauailabs.navx.frc.AHRS;
+
 import frc.robot.Constants;
 
 
@@ -44,29 +50,47 @@ public class Drive extends SubsystemBase {
     private final SwerveModule frontLeft = new SwerveModule(
             CanIDs.FrontLeftDriveMotorID,
             CanIDs.FrontLeftTurnMotorID,
-            CanIDs.FrontLeftTurnEncoderID);
+            CanIDs.FrontLeftTurnEncoderID,
+            0, 
+            false);
 
     private final SwerveModule frontRight = new SwerveModule(
             CanIDs.FrontRightDriveMotorID,
             CanIDs.FrontRightTurnMotorID,
-            CanIDs.FrontRightTurnEncoderID);
+            CanIDs.FrontRightTurnEncoderID,
+            0,
+            true);
 
     private final SwerveModule backLeft = new SwerveModule(
             CanIDs.BackLeftDriveMotorID,
             CanIDs.BackLeftTurnMotorID,
-            CanIDs.BackLeftTurnEncoderID);
+            CanIDs.BackLeftTurnEncoderID,
+            0,
+            false);
 
     private final SwerveModule backRight = new SwerveModule(
             CanIDs.BackRightDriveMotorID,
             CanIDs.BackRightTurnMotorID,
-            CanIDs.BackRightTurnEncoderID);
+            CanIDs.BackRightTurnEncoderID,
+            0,
+            true);
 
-    private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-    private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
+    private AHRS navX;
+//     private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+//     private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
 
-    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
+    private final SwerveDriveOdometry odometry ;
+
+    private SwerveModulePosition[] previousPositions = new SwerveModulePosition[4] ;
+
+
+    public Drive() {
+
+        navX = new AHRS(Port.kMXP);
+        navX.reset();
+        odometry = new SwerveDriveOdometry(
             kinematics,
-            gyro.getRotation2d(),
+            navX.getRotation2d(),
             new SwerveModulePosition[] {
                     frontLeft.getPosition(),
                     frontRight.getPosition(),
@@ -74,16 +98,12 @@ public class Drive extends SubsystemBase {
                     backRight.getPosition()
             });
 
-    private SwerveModulePosition[] previousPositions = new SwerveModulePosition[4] ;
-
-
-    public Drive() {
     }
 
     @Override
     public void periodic() {
         odometry.update(
-                gyro.getRotation2d(),
+                navX.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
@@ -92,6 +112,8 @@ public class Drive extends SubsystemBase {
                 });
 
         Logger.getInstance().recordOutput("Pose", odometry.getPoseMeters());
+        SwerveModuleState[] swerveModuleActualStates = new SwerveModuleState[] {frontLeft.getState(), frontRight.getState(), backLeft.getState(), backRight.getState()};
+        Logger.getInstance().recordOutput("SwerveStates/ActualStates", swerveModuleActualStates);
 
     }
 
@@ -102,7 +124,7 @@ public class Drive extends SubsystemBase {
 
     public void resetOdometry(Pose2d pose) {
         odometry.resetPosition(
-                gyro.getRotation2d(),
+                navX.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
@@ -116,7 +138,7 @@ public class Drive extends SubsystemBase {
         var swerveModuleDesiredStates = kinematics.toSwerveModuleStates(
                 fieldRelative
                         ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot,
-                                gyro.getRotation2d())
+                                navX.getRotation2d())
                         : new ChassisSpeeds(xSpeed, ySpeed, rot));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleDesiredStates, MaxSpeed);
         frontLeft.setDesiredState(swerveModuleDesiredStates[0]);
@@ -126,8 +148,6 @@ public class Drive extends SubsystemBase {
 
         Logger.getInstance().recordOutput("SwerveStates/DesiredStates", swerveModuleDesiredStates);
 
-        SwerveModuleState[] swerveModuleActualStates = new SwerveModuleState[] {frontLeft.getState(), frontRight.getState(), backLeft.getState(), backRight.getState()};
-        Logger.getInstance().recordOutput("SwerveStates/ActualStates", swerveModuleActualStates);
     }
 
     /**
@@ -159,15 +179,15 @@ public class Drive extends SubsystemBase {
     }
 
     public void zeroHeading() {
-        gyro.reset();
+        navX.reset();
     }
 
     public double getHeading() {
-        return gyro.getRotation2d().getDegrees();
+        return navX.getRotation2d().getDegrees();
     }
 
     public double getTurnRate() {
-        return gyro.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
+        return navX.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
     }
 
     public void simulationInit() {
@@ -200,7 +220,11 @@ public class Drive extends SubsystemBase {
                 previous.distanceMeters = current.distanceMeters;
         }
         var twist = kinematics.toTwist2d(moduleDeltas);
-        gyroSim.setAngle( gyro.getAngle() - Units.radiansToDegrees(twist.dtheta)) ;
+
+        int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+        SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+        angle.set(navX.getAngle() - Units.radiansToDegrees(twist.dtheta));
+        // gyroSim.setAngle( navX.getAngle() - Units.radiansToDegrees(twist.dtheta)) ;
     }
     
 }
