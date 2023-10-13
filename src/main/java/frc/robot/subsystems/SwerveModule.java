@@ -36,18 +36,6 @@ public class SwerveModule {
 
     private static final double WheelRadius = Units.inchesToMeters(2.0);
     private static final double WheelCircumference = 2.0 * WheelRadius * Math.PI;
-
-    /* DRIVE ENCODER */
-    private static final double DriveKP = 2e-5; // Need to change
-    // private static final double DriveKP = 0; // Need to change
-    private static final double DriveKI = 0.0000002;
-    private static final double DriveKD = 0;
-    // private static final double DriveIZone = 0;
-    private static final double DriveIZone = 50;
-    private static final double DriveFF = 1.0 / 5820.0 ;
-    // private static final double DriveFF = 0.01;
-
-
     private static final double GearRatio = 8.14;
     private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
     // private static final double PositionConversionFactor = WheelCircumference /
@@ -58,6 +46,18 @@ public class SwerveModule {
     private static final double MaxRPM = 5820;
     public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
 
+    /* DRIVE ENCODER */
+    private static final double DriveKP = 0.04; // Need to change
+    // private static final double DriveKP = 0; // Need to change
+    private static final double DriveKI = 0.0015;
+    private static final double DriveKD = 0;
+    // private static final double DriveIZone = 0;
+    private static final double DriveIZone = 0.15;
+    private static final double DriveFF = 1.0 / MaxVelocityPerSecond ;
+    // private static final double DriveFF = 0.01;
+
+
+
 
     /* TURN ENCODER */
     private static final int CANCoderResolution = 4096;
@@ -65,8 +65,8 @@ public class SwerveModule {
     private static final double TurnKP = 1; // Need to change
     private static final double TurnKI = 0;
     private static final double TurnKD = 0;
-    private static final double ModuleMaxAngularVelocity = Drive.MaxAngularSpeed;
-    private static final double ModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    private static final double ModuleMaxAngularVelocity = 3.0 * 2.0 * Math.PI;  // #revolutions * radians per revolution (rad/sec)
+    private static final double ModuleMaxAngularAcceleration = 12 * Math.PI; // radians per second squared
 
     /**********************************************************************/
     /**********************************************************************/
@@ -82,16 +82,20 @@ public class SwerveModule {
     // private final SparkMaxPIDController turnPIDController;
 
     private final ProfiledPIDController turnPIDController;
+    private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.4); // Need to change these #'s
 
-    private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.0); // Need to change these #'s
+
+    private String swerveName;
     public SwerveModule(
+            String name,
             int driveMotorID,
             int turningMotorID,
             int turnEncoderID,
             double magnetOffset,
             boolean reversed) {
 
-        // Set up drive motor and encoder
+        // Set up drive motor and encode
+        swerveName = name;
         driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
         driveMotor.restoreFactoryDefaults();
         driveMotor.setIdleMode(IdleMode.kBrake);
@@ -103,9 +107,8 @@ public class SwerveModule {
         if (RobotBase.isSimulation()) {
             localPositionConversionFactor *= 1000;
         }
-        driveEncoder.setVelocityConversionFactor(1.0);
-        // driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
-        // driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
+        driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
+        driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
 
         drivePIDController = driveMotor.getPIDController();
         drivePIDController.setP(DriveKP);
@@ -126,6 +129,7 @@ public class SwerveModule {
         canCoderConfiguration.magnetOffsetDegrees = magnetOffset; 
         canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
         canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
+        canCoderConfiguration.sensorDirection = true;
         turnEncoder.configAllSettings(canCoderConfiguration);
 
         turnPIDController = new ProfiledPIDController(
@@ -134,6 +138,7 @@ public class SwerveModule {
             0,
             new TrapezoidProfile.Constraints(
                 ModuleMaxAngularVelocity, ModuleMaxAngularAcceleration));
+        turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
     }
 
@@ -158,20 +163,20 @@ public class SwerveModule {
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
                 new Rotation2d(turnEncoder.getAbsolutePosition()));
 
-        drivePIDController.setReference(1000, ControlType.kVelocity);
+        // drivePIDController.setReference(0, ControlType.kVelocity);
 
-        Logger.getInstance().recordOutput("Drive " + driveMotor.getDeviceId() + " velocity", driveMotor.getEncoder().getVelocity());
+        Logger.getInstance().recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
+
+        drivePIDController.setReference(state.speedMetersPerSecond / 4.0, ControlType.kVelocity);
+
+        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
+                state.angle.getRadians());
 
 
-        // drivePIDController.setReference(state.speedMetersPerSecond / VelocityConversionFactor, ControlType.kVelocity);
-
-        // final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
-        //         state.angle.getRadians());
-
-        // final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
-        // turnMotor.setVoltage(turnOutput + turnFF);
-
-        turnMotor.setVoltage(0.0);
+        final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
+        turnMotor.setVoltage(turnOutput + turnFF);
+        
+        // turnMotor.setVoltage(0.0);
 
 
 
@@ -191,12 +196,12 @@ public class SwerveModule {
                 rawPosition = (int) ((angle / Math.PI) * 2048.0);
             }
             encoderSim.setRawPosition(rawPosition);
-            Logger.getInstance().recordOutput("CANCoder " + turnEncoder.getDeviceID(),
+            Logger.getInstance().recordOutput("CANCoder " + swerveName,
                     turnEncoder.getAbsolutePosition());
-            Logger.getInstance().recordOutput("CANCoder Raw " + turnEncoder.getDeviceID(), rawPosition);
-            Logger.getInstance().recordOutput("Module Desired State Angle" + turnEncoder.getDeviceID(),
+            Logger.getInstance().recordOutput("CANCoder Raw " + swerveName, rawPosition);
+            Logger.getInstance().recordOutput("Module Desired State Angle" + swerveName,
                     desiredState.angle.getRadians());
-            Logger.getInstance().recordOutput("Module State Angle" + turnEncoder.getDeviceID(),
+            Logger.getInstance().recordOutput("Module State Angle" + swerveName,
                     desiredState.angle.getRadians());
         }
     }

@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanIDs;
 import org.littletonrobotics.junction.Logger;
-
+import java.lang.Math;
 import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.Constants;
@@ -48,31 +48,36 @@ public class Drive extends SubsystemBase {
     /*******************************************************************************/
 
     private final SwerveModule frontLeft = new SwerveModule(
+            "frontLeft",
             CanIDs.FrontLeftDriveMotorID,
             CanIDs.FrontLeftTurnMotorID,
             CanIDs.FrontLeftTurnEncoderID,
-            0, 
-            false);
+            Math.toDegrees(1.5171039327979088), 
+            false
+            );
 
     private final SwerveModule frontRight = new SwerveModule(
+            "frontRight",
             CanIDs.FrontRightDriveMotorID,
             CanIDs.FrontRightTurnMotorID,
             CanIDs.FrontRightTurnEncoderID,
-            0,
+            Math.toDegrees(1.7456666082143784), 
             true);
 
     private final SwerveModule backLeft = new SwerveModule(
+            "backLeft",
             CanIDs.BackLeftDriveMotorID,
             CanIDs.BackLeftTurnMotorID,
             CanIDs.BackLeftTurnEncoderID,
-            0,
+            Math.toDegrees(-2.7626938149333), 
             false);
 
     private final SwerveModule backRight = new SwerveModule(
+            "backRight",
             CanIDs.BackRightDriveMotorID,
             CanIDs.BackRightTurnMotorID,
             CanIDs.BackRightTurnEncoderID,
-            0,
+            Math.toDegrees(-2.305568464100361),
             true);
 
     private AHRS navX;

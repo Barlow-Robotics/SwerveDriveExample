@@ -52,8 +52,8 @@ public class DriveRobot extends CommandBase {
     @Override
     public void execute() {
         double XSpeed = MathUtil.applyDeadband(-driverController.getLeftY(), DeadBand);
-        double YSpeed = MathUtil.applyDeadband(-driverController.getLeftX(), DeadBand);
-        double Rot = MathUtil.applyDeadband(-driverController.getRightX(), DeadBand);
+        double YSpeed = MathUtil.applyDeadband(driverController.getLeftX(), DeadBand);
+        double Rot = MathUtil.applyDeadband(driverController.getRightX(), DeadBand);
 
         XSpeed *= MaxVelocity;
         YSpeed *= MaxVelocity;
