@@ -104,6 +104,7 @@ public class SwerveModule {
         driveEncoder = driveMotor.getEncoder();
 
         double localPositionConversionFactor = PositionConversionFactor;
+        
         if (RobotBase.isSimulation()) {
             localPositionConversionFactor *= 1000;
         }

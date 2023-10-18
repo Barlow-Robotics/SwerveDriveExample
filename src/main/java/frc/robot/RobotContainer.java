@@ -14,12 +14,17 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.commands.DriveRobot;
+import frc.robot.commands.InstrumentedSequentialCommandGroup;
 import frc.robot.subsystems.Drive;
 
 /* OVERALL TO DO
@@ -61,6 +66,12 @@ public class RobotContainer {
     TrapezoidProfile.Constraints thetaConstraintsTrapezoidProfile = new TrapezoidProfile.Constraints(AutoConstants.kMaxAngularSpeedRadiansPerSecond,
     AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
 
+    PathPlannerTrajectory path;
+    PIDController xPidController;
+    PIDController yPidController;
+
+    final SendableChooser<String> pathChooser = new SendableChooser<String>();
+
 
 
     /********************************************************************/
@@ -73,7 +84,9 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureButtonBindings();
-
+        buildAutoOptions();
+        xPidController = new PIDController(kPXController, 0, 0);
+        yPidController = new PIDController(kPYController, 0, 0);
         driveSub.setDefaultCommand(
                 // The left stick controls translation of the robot.
                 // Turning is controlled by the X axis of the right stick.
@@ -85,22 +98,25 @@ public class RobotContainer {
         driverController = new PS4Controller(1);
     }
 
-    public Command getAutonomousCommand() {
+    private PathPlannerTrajectory loadPath(String name, double velocity, double accel, boolean reverse) {
+        PathPlannerTrajectory temp = PathPlanner.loadPath(
+                        name,
+                        new PathConstraints(velocity, accel),
+                        reverse);
+        return PathPlannerTrajectory.transformTrajectoryForAlliance(temp, DriverStation.getAlliance());
+    }
+    private void buildAutoOptions() {
+        pathChooser.setDefaultOption("Line", "line");
+        pathChooser.addOption("BotGo", "BotGo");
+        SmartDashboard.putData("Path Chooser", pathChooser);
+    }
+    InstrumentedSequentialCommandGroup goTop() {
+        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+        path = loadPath(pathChooser.getSelected(), 1.0, 3.0, false);
 
-        PathPlannerTrajectory traj2 = PathPlanner.generatePath(
-            new PathConstraints(3, 16), 
-            new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(5.0, 3.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(10.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(15.0, 7.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-45)) // position, heading(direction of travel), holonomic rotation
-        );
-        // Logger.getInstance().recordOutput("PP Auto Path", traj2);
-
-        PIDController xPidController = new PIDController(kPXController, 0, 0);
-        PIDController yPidController = new PIDController(kPYController, 0, 0);
-
-        var ppCommand = new PPSwerveControllerCommand(
-            traj2, 
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(path.getInitialPose())));
+        theCommand.addCommands(new PPSwerveControllerCommand(
+            path, 
             driveSub::getPose, // Pose supplier
             driveSub.kinematics, // SwerveDriveKinematics
             xPidController,
@@ -108,15 +124,32 @@ public class RobotContainer {
             new PIDController(3.0,0.0,0.0), 
             driveSub::setModuleStates, // Module states consumer
             false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub // Requires this drive subsystem
-        );
-
-    // 5. Add some init and wrap-up, and return everything
-    return new SequentialCommandGroup(
-        new InstantCommand(() -> driveSub.resetOdometry(traj2.getInitialPose())),
-        // swerveControllerCommand,
-        ppCommand,
-        new InstantCommand(() -> driveSub.drive(0.0,0.0,0.0,true)));    
+            driveSub));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.drive(0.0,0.0,0.0,true)));
+        return theCommand;
     }
 
+
+
+    public Command getAutonomousCommand() {
+
+        // PathPlannerTrajectory traj2 = PathPlanner.generatePath(
+        //     new PathConstraints(3, 16), 
+        //     new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+        //     new PathPoint(new Translation2d(5.0, 3.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+        //     new PathPoint(new Translation2d(10.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+        //     new PathPoint(new Translation2d(15.0, 7.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-45)) // position, heading(direction of travel), holonomic rotation
+        // );
+        // Logger.getInstance().recordOutput("PP Auto Path", traj2);
+        
+        String choice = pathChooser.getSelected();
+        if (choice == "BotGo") {
+            return goTop();
+        }
+        else {
+            System.out.println("Choose not choosen");
+            return null;
+        }
+
+    }
 }
