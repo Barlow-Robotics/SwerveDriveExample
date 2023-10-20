@@ -78,10 +78,9 @@ public class SwerveModule {
     private final RelativeEncoder driveEncoder;
     private final WPI_CANCoder turnEncoder;
 
-    private final SparkMaxPIDController drivePIDController;
-    // private final SparkMaxPIDController turnPIDController;
-
-    private final ProfiledPIDController turnPIDController;
+    public final SparkMaxPIDController drivePIDController;
+    public final ProfiledPIDController turnPIDController;
+    
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.4); // Need to change these #'s
 
 

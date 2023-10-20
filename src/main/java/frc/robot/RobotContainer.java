@@ -59,19 +59,25 @@ public class RobotContainer {
     public static final double LDAForwardAxisAttenuation = -0.5;
     public static final double LDALateralAxisAttenuation = 0.5;
     public static final double LDAYawAxisAttenuation = 0.5;
-    public static final double kPXController = 1.5; // change
-    public static final double kPYController = 1.5; // change
+
+
+    public static final double xKP = 1.5; // change
+    public static final double yKP = 1.5; // change
+    public static final double turnKP = 0.5;
 
 
     TrapezoidProfile.Constraints thetaConstraintsTrapezoidProfile = new TrapezoidProfile.Constraints(AutoConstants.kMaxAngularSpeedRadiansPerSecond,
     AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
 
-    PathPlannerTrajectory path;
-    PIDController xPidController;
-    PIDController yPidController;
+    PathPlannerTrajectory currentTrajectory = null;
+    PathPlannerTrajectory botGoAround;
+    PathPlannerTrajectory botGo;
+
+    PIDController xPIDController;
+    PIDController yPIDController;
+    PIDController turnPIDController;
 
     final SendableChooser<String> pathChooser = new SendableChooser<String>();
-
 
 
     /********************************************************************/
@@ -85,8 +91,11 @@ public class RobotContainer {
     public RobotContainer() {
         configureButtonBindings();
         buildAutoOptions();
-        xPidController = new PIDController(kPXController, 0, 0);
-        yPidController = new PIDController(kPYController, 0, 0);
+
+        xPIDController = new PIDController(xKP, 0, 0);
+        yPIDController = new PIDController(yKP, 0, 0);
+        turnPIDController = new PIDController(turnKP, 0, 0);
+
         driveSub.setDefaultCommand(
                 // The left stick controls translation of the robot.
                 // Turning is controlled by the X axis of the right stick.
@@ -105,31 +114,58 @@ public class RobotContainer {
                         reverse);
         return PathPlannerTrajectory.transformTrajectoryForAlliance(temp, DriverStation.getAlliance());
     }
+
+    public PathPlannerTrajectory getCurrentTrajectory() {
+        return currentTrajectory;
+    }
+    
     private void buildAutoOptions() {
-        pathChooser.setDefaultOption("Line", "line");
+        pathChooser.setDefaultOption("BotGoAround", "BotGoAround");
         pathChooser.addOption("BotGo", "BotGo");
         SmartDashboard.putData("Path Chooser", pathChooser);
     }
-    InstrumentedSequentialCommandGroup goTop() {
-        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
-        path = loadPath(pathChooser.getSelected(), 1.0, 3.0, false);
 
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(path.getInitialPose())));
+    InstrumentedSequentialCommandGroup BotGoAround() {
+        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+
+        botGoAround = loadPath("BotGoAround", 1.0, 3.0, false);
+
+        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
         theCommand.addCommands(new PPSwerveControllerCommand(
-            path, 
+            botGoAround, 
             driveSub::getPose, // Pose supplier
             driveSub.kinematics, // SwerveDriveKinematics
-            xPidController,
-            yPidController,
+            xPIDController,
+            yPIDController,
             new PIDController(3.0,0.0,0.0), 
             driveSub::setModuleStates, // Module states consumer
             false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
             driveSub));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.drive(0.0,0.0,0.0,true)));
+
         return theCommand;
     }
+    
+    InstrumentedSequentialCommandGroup BotGo() {
+        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+        
+        botGo = loadPath("BotGoAround", 1.0, 3.0, false);
 
+        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
+        theCommand.addCommands(new PPSwerveControllerCommand(
+            botGo, 
+            driveSub::getPose, // Pose supplier
+            driveSub.kinematics, // SwerveDriveKinematics
+            xPIDController,
+            yPIDController,
+            turnPIDController, 
+            driveSub::setModuleStates, // Module states consumer
+            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            driveSub));
 
+        return theCommand;
+    }
 
     public Command getAutonomousCommand() {
 
@@ -143,11 +179,11 @@ public class RobotContainer {
         // Logger.getInstance().recordOutput("PP Auto Path", traj2);
         
         String choice = pathChooser.getSelected();
-        if (choice == "BotGo") {
-            return goTop();
+        if (choice == "BotGoAround") {
+            return BotGo();
         }
         else {
-            System.out.println("Choose not choosen");
+            System.out.println("Path not choosen");
             return null;
         }
 

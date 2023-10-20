@@ -14,7 +14,9 @@ import com.revrobotics.REVPhysicsSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;;
 
 
 /**
@@ -28,12 +30,17 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer robotContainer;
 
+  // private Field2d field;
+
 
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
 
     Logger logger = Logger.getInstance();
+
+    // field = new Field2d();
+    // SmartDashboard.putData("Field", field) ;
 
     logger.recordMetadata("ProjectName", "WPI-Swerve-Prototype"); // Set a metadata value
 
@@ -56,6 +63,12 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
+    // field.setRobotPose(robotContainer.driveSub.getPose());
+    // Push the trajectory to Field2d.
+if (robotContainer.getCurrentTrajectory() != null) {
+    // field.getObject("traj").setTrajectory(robotContainer.getCurrentTrajectory());
+}
   }
 
   @Override

@@ -10,7 +10,15 @@
   },
   "NTProvider": {
     "types": {
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Path Chooser": "String Chooser"
+    },
+    "windows": {
+      "/SmartDashboard/Path Chooser": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
