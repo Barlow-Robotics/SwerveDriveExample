@@ -56,7 +56,7 @@ public class DriveRobot extends CommandBase {
         double Rot = MathUtil.applyDeadband(driverController.getRightX(), DeadBand);
 
         XSpeed *= MaxVelocity;
-        YSpeed *= MaxVelocity;
+        YSpeed *= -MaxVelocity;
         Rot *= MaxRotVelocity;
         
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);

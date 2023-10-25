@@ -166,21 +166,45 @@ public class RobotContainer {
 
         return theCommand;
     }
+    InstrumentedSequentialCommandGroup customCommand(PathPlannerTrajectory path) {
+        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+        
+        botGo = path;
+
+        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
+        theCommand.addCommands(new PPSwerveControllerCommand(
+            botGo, 
+            driveSub::getPose, // Pose supplier
+            driveSub.kinematics, // SwerveDriveKinematics
+            xPIDController,
+            yPIDController,
+            turnPIDController, 
+            driveSub::setModuleStates, // Module states consumer
+            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            driveSub));
+
+        return theCommand;
+    }
 
     public Command getAutonomousCommand() {
+        PathPlannerTrajectory traj2 = PathPlanner.generatePath(
+            new PathConstraints(2, 8), 
+            new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(1.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(2.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(2.0, 2.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(0.0, 2.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)) // position, heading(direction of travel), holonomic rotation
+        );
 
-        // PathPlannerTrajectory traj2 = PathPlanner.generatePath(
-        //     new PathConstraints(3, 16), 
-        //     new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-        //     new PathPoint(new Translation2d(5.0, 3.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-        //     new PathPoint(new Translation2d(10.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-        //     new PathPoint(new Translation2d(15.0, 7.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-45)) // position, heading(direction of travel), holonomic rotation
-        // );
-        // Logger.getInstance().recordOutput("PP Auto Path", traj2);
-        
         String choice = pathChooser.getSelected();
+        choice = "custom";
         if (choice == "BotGoAround") {
             return BotGo();
+        }
+        else if (choice == "custom") {
+            return customCommand(traj2);
         }
         else {
             System.out.println("Path not choosen");

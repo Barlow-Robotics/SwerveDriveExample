@@ -167,7 +167,7 @@ public class SwerveModule {
 
         Logger.getInstance().recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
 
-        drivePIDController.setReference(state.speedMetersPerSecond / 4.0, ControlType.kVelocity);
+        drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
         final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
                 state.angle.getRadians());
