@@ -120,7 +120,7 @@ public class RobotContainer {
     }
     
     private void buildAutoOptions() {
-        pathChooser.setDefaultOption("BotGoAround", "BotGoAround");
+        pathChooser.setDefaultOption("square", "square");
         pathChooser.addOption("BotGo", "BotGo");
         SmartDashboard.putData("Path Chooser", pathChooser);
     }
@@ -128,7 +128,7 @@ public class RobotContainer {
     InstrumentedSequentialCommandGroup BotGoAround() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
 
-        botGoAround = loadPath("BotGoAround", 1.0, 3.0, false);
+        botGoAround = loadPath("BotGoAround", 4.0, 3.0, false);
 
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
@@ -149,7 +149,7 @@ public class RobotContainer {
     InstrumentedSequentialCommandGroup BotGo() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
-        botGo = loadPath("BotGoAround", 1.0, 3.0, false);
+        botGo = loadPath("square", 4.0, 3.0, false);
 
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
@@ -170,10 +170,7 @@ public class RobotContainer {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
         botGo = path;
-
-        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
-        theCommand.addCommands(new PPSwerveControllerCommand(
+        var ppCommand = new PPSwerveControllerCommand(
             botGo, 
             driveSub::getPose, // Pose supplier
             driveSub.kinematics, // SwerveDriveKinematics
@@ -182,8 +179,11 @@ public class RobotContainer {
             turnPIDController, 
             driveSub::setModuleStates, // Module states consumer
             false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub));
-
+            driveSub);
+        ppCommand.setLoggingCallbacks(null, null, null, null);
+        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
+        theCommand.addCommands(ppCommand);
         return theCommand;
     }
 
@@ -199,8 +199,7 @@ public class RobotContainer {
         );
 
         String choice = pathChooser.getSelected();
-        choice = "custom";
-        if (choice == "BotGoAround") {
+        if (choice == "square") {
             return BotGo();
         }
         else if (choice == "custom") {
