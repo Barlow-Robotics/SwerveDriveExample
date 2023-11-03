@@ -149,7 +149,7 @@ public class RobotContainer {
     InstrumentedSequentialCommandGroup BotGo() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
-        botGo = loadPath("square", 4.0, 3.0, false);
+        botGo = loadPath("square", 3.5, 14.0, false);
 
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
@@ -180,7 +180,6 @@ public class RobotContainer {
             driveSub::setModuleStates, // Module states consumer
             false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
             driveSub);
-        ppCommand.setLoggingCallbacks(null, null, null, null);
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
         theCommand.addCommands(ppCommand);

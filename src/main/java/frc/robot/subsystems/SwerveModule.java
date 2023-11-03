@@ -121,6 +121,7 @@ public class SwerveModule {
         // Set up turn motor and encoder
         turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
         turnMotor.setIdleMode(IdleMode.kBrake);
+        // turnMotor.setInverted(true);
         turnMotor.restoreFactoryDefaults();
 
         turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
