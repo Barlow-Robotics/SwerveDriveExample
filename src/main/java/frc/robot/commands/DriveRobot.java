@@ -23,9 +23,9 @@ public class DriveRobot extends CommandBase {
 
     boolean FieldRelative;
 
-    double DeadBand = 0.05;
-    double MaxVelocity = 4.0; //meters per second //value is chosen, not calculated
-    double MaxRotVelocity = 2.0; //meters per second
+    double DeadBand = 0.08;
+    double MaxVelocity = 3.6; //meters per second //value is chosen, not calculated
+    double MaxRotVelocity = 2.0; //radians per second
     int MaxRPM = 5676;
     
     public DriveRobot(
@@ -51,12 +51,24 @@ public class DriveRobot extends CommandBase {
 
     @Override
     public void execute() {
-        double XSpeed = MathUtil.applyDeadband(-driverController.getLeftY(), DeadBand);
-        double YSpeed = MathUtil.applyDeadband(-driverController.getLeftX(), DeadBand);
-        double Rot = MathUtil.applyDeadband(driverController.getRightX(), DeadBand);
+        double rawX = -driverController.getLeftY() ;
+        rawX = 0.2;
+        double rawY = driverController.getLeftX() ;
+        rawY = 0;
+        double rawRot = driverController.getRightX() ;
+        rawRot = 0.0 ;
+
+        Logger.getInstance().recordOutput("Raw Yaw Input", rawRot);
+        Logger.getInstance().recordOutput("Raw XSpeed", rawX);
+        Logger.getInstance().recordOutput("Raw YSpeed", rawY);
+
+
+        double XSpeed = MathUtil.applyDeadband(rawX, DeadBand);
+        double YSpeed = MathUtil.applyDeadband(rawY, DeadBand);
+        double Rot = MathUtil.applyDeadband(rawRot, 2*DeadBand);
 
         XSpeed *= MaxVelocity;
-        YSpeed *= -MaxVelocity;
+        YSpeed *= MaxVelocity;
         Rot *= MaxRotVelocity;
         
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);

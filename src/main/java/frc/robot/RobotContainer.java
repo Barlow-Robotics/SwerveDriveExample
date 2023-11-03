@@ -128,7 +128,7 @@ public class RobotContainer {
     InstrumentedSequentialCommandGroup BotGoAround() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
 
-        botGoAround = loadPath("BotGoAround", 4.0, 3.0, false);
+        botGoAround = loadPath("BotGoAround", 1.0, 2.0, false);
 
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
@@ -149,7 +149,7 @@ public class RobotContainer {
     InstrumentedSequentialCommandGroup BotGo() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
-        botGo = loadPath("square", 3.5, 14.0, false);
+        botGo = loadPath("square", 1.0, 2.0, false);
 
         theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
         theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
