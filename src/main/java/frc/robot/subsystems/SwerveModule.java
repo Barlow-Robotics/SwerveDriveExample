@@ -120,9 +120,9 @@ public class SwerveModule {
 
         // Set up turn motor and encoder
         turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
-        turnMotor.setIdleMode(IdleMode.kBrake);
-        // turnMotor.setInverted(true);
         turnMotor.restoreFactoryDefaults();
+        turnMotor.setIdleMode(IdleMode.kBrake);
+        turnMotor.setInverted(true);
 
         turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
         CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
@@ -130,7 +130,8 @@ public class SwerveModule {
         canCoderConfiguration.magnetOffsetDegrees = magnetOffset; 
         canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
         canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
-        canCoderConfiguration.sensorDirection = true;
+        // canCoderConfiguration.sensorDirection = true;
+        canCoderConfiguration.sensorDirection = false;
         turnEncoder.configAllSettings(canCoderConfiguration);
 
         turnPIDController = new ProfiledPIDController(

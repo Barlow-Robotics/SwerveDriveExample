@@ -40,10 +40,10 @@ public class Drive extends SubsystemBase {
     // Distance between right and left wheels
     public static final double kWheelBase = 0.762;
     public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-    new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+        new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
     /*******************************************************************************/
     /*******************************************************************************/
 

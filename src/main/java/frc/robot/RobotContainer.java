@@ -70,8 +70,8 @@ public class RobotContainer {
     AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
 
     PathPlannerTrajectory currentTrajectory = null;
-    PathPlannerTrajectory botGoAround;
-    PathPlannerTrajectory botGo;
+    // PathPlannerTrajectory botGoAround;
+    // PathPlannerTrajectory botGo;
 
     PIDController xPIDController;
     PIDController yPIDController;
@@ -107,14 +107,6 @@ public class RobotContainer {
         driverController = new PS4Controller(1);
     }
 
-    private PathPlannerTrajectory loadPath(String name, double velocity, double accel, boolean reverse) {
-        PathPlannerTrajectory temp = PathPlanner.loadPath(
-                        name,
-                        new PathConstraints(velocity, accel),
-                        reverse);
-        return PathPlannerTrajectory.transformTrajectoryForAlliance(temp, DriverStation.getAlliance());
-    }
-
     public PathPlannerTrajectory getCurrentTrajectory() {
         return currentTrajectory;
     }
@@ -125,36 +117,38 @@ public class RobotContainer {
         SmartDashboard.putData("Path Chooser", pathChooser);
     }
 
-    InstrumentedSequentialCommandGroup BotGoAround() {
-        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+    // InstrumentedSequentialCommandGroup BotGoAround() {
+    //     InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
 
-        botGoAround = loadPath("BotGoAround", 1.0, 2.0, false);
+    //     botGoAround = PathPlanner.loadPath("BotGoAround", 1.0, 2.0, false);
 
-        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
-        theCommand.addCommands(new PPSwerveControllerCommand(
-            botGoAround, 
-            driveSub::getPose, // Pose supplier
-            driveSub.kinematics, // SwerveDriveKinematics
-            xPIDController,
-            yPIDController,
-            new PIDController(3.0,0.0,0.0), 
-            driveSub::setModuleStates, // Module states consumer
-            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub));
+    //     theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
+    //     theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
+    //     theCommand.addCommands(new PPSwerveControllerCommand(
+    //         botGoAround, 
+    //         driveSub::getPose, // Pose supplier
+    //         driveSub.kinematics, // SwerveDriveKinematics
+    //         xPIDController,
+    //         yPIDController,
+    //         new PIDController(3.0,0.0,0.0), 
+    //         driveSub::setModuleStates, // Module states consumer
+    //         false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+    //         driveSub));
 
-        return theCommand;
-    }
+    //     return theCommand;
+    // }
     
-    InstrumentedSequentialCommandGroup BotGo() {
+
+
+    InstrumentedSequentialCommandGroup SquareAuto() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
-        botGo = loadPath("square", 1.0, 2.0, false);
+        var squarePath = PathPlanner.loadPath("square", 1.0, 2.0, false);
 
-        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
+        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = squarePath));
+        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(squarePath.getInitialPose())));
         theCommand.addCommands(new PPSwerveControllerCommand(
-            botGo, 
+            squarePath, 
             driveSub::getPose, // Pose supplier
             driveSub.kinematics, // SwerveDriveKinematics
             xPIDController,
@@ -166,25 +160,29 @@ public class RobotContainer {
 
         return theCommand;
     }
-    InstrumentedSequentialCommandGroup customCommand(PathPlannerTrajectory path) {
-        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+
+
+
+
+    // InstrumentedSequentialCommandGroup customCommand(PathPlannerTrajectory path) {
+    //     InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
-        botGo = path;
-        var ppCommand = new PPSwerveControllerCommand(
-            botGo, 
-            driveSub::getPose, // Pose supplier
-            driveSub.kinematics, // SwerveDriveKinematics
-            xPIDController,
-            yPIDController,
-            turnPIDController, 
-            driveSub::setModuleStates, // Module states consumer
-            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub);
-        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
-        theCommand.addCommands(ppCommand);
-        return theCommand;
-    }
+    //     botGo = path;
+    //     var ppCommand = new PPSwerveControllerCommand(
+    //         botGo, 
+    //         driveSub::getPose, // Pose supplier
+    //         driveSub.kinematics, // SwerveDriveKinematics
+    //         xPIDController,
+    //         yPIDController,
+    //         turnPIDController, 
+    //         driveSub::setModuleStates, // Module states consumer
+    //         false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+    //         driveSub);
+    //     theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
+    //     theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
+    //     theCommand.addCommands(ppCommand);
+    //     return theCommand;
+    // }
 
     public Command getAutonomousCommand() {
         PathPlannerTrajectory traj2 = PathPlanner.generatePath(
@@ -199,11 +197,11 @@ public class RobotContainer {
 
         String choice = pathChooser.getSelected();
         if (choice == "square") {
-            return BotGo();
+            return SquareAuto();
         }
-        else if (choice == "custom") {
-            return customCommand(traj2);
-        }
+        // else if (choice == "custom") {
+        //     return customCommand(traj2);
+        // }
         else {
             System.out.println("Path not choosen");
             return null;
