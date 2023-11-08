@@ -70,8 +70,6 @@ public class RobotContainer {
     AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
 
     PathPlannerTrajectory currentTrajectory = null;
-    // PathPlannerTrajectory botGoAround;
-    // PathPlannerTrajectory botGo;
 
     PIDController xPIDController;
     PIDController yPIDController;
@@ -113,33 +111,11 @@ public class RobotContainer {
     
     private void buildAutoOptions() {
         pathChooser.setDefaultOption("square", "square");
-        pathChooser.addOption("BotGo", "BotGo");
+        pathChooser.addOption("line", "line");
         SmartDashboard.putData("Path Chooser", pathChooser);
     }
 
-    // InstrumentedSequentialCommandGroup BotGoAround() {
-    //     InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
-
-    //     botGoAround = PathPlanner.loadPath("BotGoAround", 1.0, 2.0, false);
-
-    //     theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGoAround));
-    //     theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGoAround.getInitialPose())));
-    //     theCommand.addCommands(new PPSwerveControllerCommand(
-    //         botGoAround, 
-    //         driveSub::getPose, // Pose supplier
-    //         driveSub.kinematics, // SwerveDriveKinematics
-    //         xPIDController,
-    //         yPIDController,
-    //         new PIDController(3.0,0.0,0.0), 
-    //         driveSub::setModuleStates, // Module states consumer
-    //         false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-    //         driveSub));
-
-    //     return theCommand;
-    // }
-    
-
-
+     
     InstrumentedSequentialCommandGroup SquareAuto() {
         InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
         
@@ -164,48 +140,36 @@ public class RobotContainer {
 
 
 
-    // InstrumentedSequentialCommandGroup customCommand(PathPlannerTrajectory path) {
-    //     InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
+    InstrumentedSequentialCommandGroup customAuto(String pathName) {
+        InstrumentedSequentialCommandGroup theCmd = new InstrumentedSequentialCommandGroup();
         
-    //     botGo = path;
-    //     var ppCommand = new PPSwerveControllerCommand(
-    //         botGo, 
-    //         driveSub::getPose, // Pose supplier
-    //         driveSub.kinematics, // SwerveDriveKinematics
-    //         xPIDController,
-    //         yPIDController,
-    //         turnPIDController, 
-    //         driveSub::setModuleStates, // Module states consumer
-    //         false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-    //         driveSub);
-    //     theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = botGo));
-    //     theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(botGo.getInitialPose())));
-    //     theCommand.addCommands(ppCommand);
-    //     return theCommand;
-    // }
+        PathPlannerTrajectory autoPath = PathPlanner.loadPath(pathName, 1.0, 2.0, false);
+
+        theCmd.addCommands(new InstantCommand(() -> this.currentTrajectory = autoPath));
+        theCmd.addCommands(new InstantCommand(() -> driveSub.resetOdometry(autoPath.getInitialPose())));
+        theCmd.addCommands(new PPSwerveControllerCommand(
+            autoPath, 
+            driveSub::getPose, // Pose supplier
+            driveSub.kinematics, // SwerveDriveKinematics
+            xPIDController,
+            yPIDController,
+            turnPIDController, 
+            driveSub::setModuleStates, // Module states consumer
+            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            driveSub));
+      
+        return theCmd;
+    }
 
     public Command getAutonomousCommand() {
-        PathPlannerTrajectory traj2 = PathPlanner.generatePath(
-            new PathConstraints(2, 8), 
-            new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(1.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(2.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(2.0, 2.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(0.0, 2.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)) // position, heading(direction of travel), holonomic rotation
-        );
-
         String choice = pathChooser.getSelected();
         if (choice == "square") {
             return SquareAuto();
-        }
-        // else if (choice == "custom") {
-        //     return customCommand(traj2);
-        // }
-        else {
+        } else if (choice == "line") {
+            return customAuto("line");
+        } else {
             System.out.println("Path not choosen");
             return null;
         }
-
     }
 }
