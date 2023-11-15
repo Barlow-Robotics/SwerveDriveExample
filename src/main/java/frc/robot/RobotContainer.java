@@ -110,8 +110,9 @@ public class RobotContainer {
     }
     
     private void buildAutoOptions() {
-        pathChooser.setDefaultOption("square", "square");
-        pathChooser.addOption("line", "line");
+        pathChooser.setDefaultOption("horizontalLine", "horizontalLine");
+        pathChooser.addOption("square", "square");
+        pathChooser.addOption("striaght", "striaght");
         SmartDashboard.putData("Path Chooser", pathChooser);
     }
 
@@ -163,13 +164,17 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         String choice = pathChooser.getSelected();
-        if (choice == "square") {
-            return SquareAuto();
-        } else if (choice == "line") {
-            return customAuto("line");
-        } else {
-            System.out.println("Path not choosen");
-            return null;
-        }
+        return customAuto("horizontalLine");      
+
+        // if (choice == "square") {
+        //     return customAuto("horizontalLine");      
+        // } else if (choice == "horizontalLine") {
+        //     return customAuto("horizontalLine");      
+        // } else if (choice == "striaght") {
+        //     return customAuto("striaghtLine");
+        // } else {
+        //     System.out.println("Path not choosen");
+        //     return null;
+        // }
     }
 }

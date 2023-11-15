@@ -51,8 +51,8 @@ public class DriveRobot extends CommandBase {
 
     @Override
     public void execute() {
-        double rawX = -driverController.getLeftX() ;
-        double rawY = driverController.getLeftY() ;
+        double rawX = -driverController.getLeftY() ;
+        double rawY = -driverController.getLeftX() ;
         double rawRot = -driverController.getRightX() ; 
 
         Logger.getInstance().recordOutput("Raw Yaw Input", rawRot);

@@ -36,7 +36,7 @@ public class SwerveModule {
 
     private static final double WheelRadius = Units.inchesToMeters(2.0);
     private static final double WheelCircumference = 2.0 * WheelRadius * Math.PI;
-    private static final double GearRatio = 8.14;
+    private static final double GearRatio = 6.75;
     private static final double VelocityConversionFactor = WheelCircumference / Constants.SecondsPerMinute / GearRatio;
     // private static final double PositionConversionFactor = WheelCircumference /
     // GearRatio;
