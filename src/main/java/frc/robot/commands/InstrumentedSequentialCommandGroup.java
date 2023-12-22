@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -20,7 +20,7 @@ import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class InstrumentedSequentialCommandGroup extends CommandBase {
+public class InstrumentedSequentialCommandGroup extends Command {
   private final List<Command> m_commands = new ArrayList<>();
   private int m_currentCommandIndex = -1;
   private boolean m_runWhenDisabled = true;

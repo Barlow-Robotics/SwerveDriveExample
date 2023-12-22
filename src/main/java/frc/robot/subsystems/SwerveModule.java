@@ -5,12 +5,17 @@
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoderConfiguration;
-import com.ctre.phoenix.sensors.CANCoderSimCollection;
-import com.ctre.phoenix.sensors.SensorInitializationStrategy;
-import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.ctre.phoenix6.sim.DeviceType;
+// import com.ctre.phoenix6.sensors.AbsoluteSensorRange;
+// import com.ctre.phoenix6.sensors.CANCoderConfiguration;
+// import com.ctre.phoenix6.sensors.CANCoderSimCollection;
+// import com.ctre.phoenix6.sensors.SensorInitializationStrategy;
+import com.ctre.phoenix6.sim.CANcoderSimState;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
@@ -76,7 +81,7 @@ public class SwerveModule {
     private final CANSparkMax turnMotor;
 
     private final RelativeEncoder driveEncoder;
-    private final WPI_CANCoder turnEncoder;
+    private final CANcoder turnEncoder;
 
     public final SparkMaxPIDController drivePIDController;
     public final ProfiledPIDController turnPIDController;
@@ -124,15 +129,20 @@ public class SwerveModule {
         turnMotor.setIdleMode(IdleMode.kBrake);
         turnMotor.setInverted(true);
 
-        turnEncoder = new WPI_CANCoder(turnEncoderID, "rio");
-        CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
-        canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180; // BW sets the sensor to be [-180, 180] rather then [0, 360]
-        canCoderConfiguration.magnetOffsetDegrees = magnetOffset; 
-        canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
-        canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
-        // canCoderConfiguration.sensorDirection = true;
-        canCoderConfiguration.sensorDirection = false;
-        turnEncoder.configAllSettings(canCoderConfiguration);
+        turnEncoder = new CANcoder(turnEncoderID, "rio");
+        var canCoderConfiguration = new CANcoderConfiguration();
+        MagnetSensorConfigs magnetConfig = new MagnetSensorConfigs();
+        magnetConfig.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        magnetConfig.MagnetOffset = magnetOffset;
+        magnetConfig.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+
+        canCoderConfiguration.MagnetSensor = magnetConfig;
+                
+        //need to be added
+        // canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
+        // canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
+
+        turnEncoder.getConfigurator().apply(canCoderConfiguration);
 
         turnPIDController = new ProfiledPIDController(
             1,
@@ -146,14 +156,14 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition()));
+                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
     }
 
 
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition()));
+                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
     }
 
 
@@ -163,7 +173,7 @@ public class SwerveModule {
         // Optimize the reference state to avoid spinning further than 90 degrees
 
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
-                new Rotation2d(turnEncoder.getAbsolutePosition()));
+                new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
 
         // drivePIDController.setReference(0, ControlType.kVelocity);
 
@@ -171,7 +181,7 @@ public class SwerveModule {
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition(),
+        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition().getValueAsDouble(),
                 state.angle.getRadians());
 
 
@@ -189,7 +199,7 @@ public class SwerveModule {
         if (RobotBase.isSimulation()) {
             // double angle = desiredState.angle.getRadians() ;
             double angle = state.angle.getRadians();
-            CANCoderSimCollection encoderSim = turnEncoder.getSimCollection();
+            CANcoderSimState encoderSim = turnEncoder.getSimState();
 
             int rawPosition = 0;
             if (angle < 0) {

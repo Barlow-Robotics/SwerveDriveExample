@@ -13,6 +13,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Drive;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -31,12 +32,12 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   // private Field2d field;
-
+  Drive driveSub;
 
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
-
+    driveSub = new Drive();
     Logger logger = Logger.getInstance();
 
     // field = new Field2d();
@@ -66,9 +67,9 @@ public class Robot extends LoggedRobot {
 
     // field.setRobotPose(robotContainer.driveSub.getPose());
     // Push the trajectory to Field2d.
-if (robotContainer.getCurrentTrajectory() != null) {
-    // field.getObject("traj").setTrajectory(robotContainer.getCurrentTrajectory());
-}
+// if (robotContainer.getCurrentTrajectory() != null) {
+//     // field.getObject("traj").setTrajectory(robotContainer.getCurrentTrajectory());
+// }
   }
 
   @Override
@@ -80,7 +81,6 @@ if (robotContainer.getCurrentTrajectory() != null) {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
-
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
      * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -116,7 +116,7 @@ if (robotContainer.getCurrentTrajectory() != null) {
 
   @Override
   public void simulationInit() {
-    robotContainer.driveSub.simulationInit();
+    robotContainer.swerve.simulationInit();
   }
 
   @Override

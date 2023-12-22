@@ -1,48 +1,59 @@
 {
-  "HALProvider": {
-    "Other Devices": {
-      "SPARK MAX [6]": {
-        "header": {
-          "open": true
-        }
-      }
-    }
-  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/SmartDashboard/Path Chooser": "String Chooser"
+      "/SmartDashboard/Auto Mode": "String Chooser",
+      "/SmartDashboard/Example Auto": "Command",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/On-the-fly path": "Command",
+      "/SmartDashboard/Pathfind to Pickup Pos": "Command",
+      "/SmartDashboard/Pathfind to Scoring Pos": "Command"
     },
     "windows": {
-      "/SmartDashboard/Path Chooser": {
+      "/SmartDashboard/Auto Mode": {
         "window": {
           "visible": true
         }
-      }
-    }
-  },
-  "NetworkTables": {
-    "transitory": {
-      "AdvantageKit": {
-        "RealOutputs": {
-          "SwerveStates": {
-            "open": true
-          },
-          "open": true
-        },
-        "open": true
-      }
-    }
-  },
-  "Plot": {
-    "Plot <0>": {
-      "plots": [
-        {
-          "height": 584
+      },
+      "/SmartDashboard/Example Auto": {
+        "window": {
+          "visible": true
         }
-      ],
-      "window": {
-        "visible": false
+      },
+      "/SmartDashboard/Field": {
+        "Robot": {
+          "length": 0.8999999761581421,
+          "width": 0.8999999761581421
+        },
+        "bottom": 544,
+        "builtin": "2023 Charged Up",
+        "height": 8.013679504394531,
+        "left": 46,
+        "path": {
+          "arrows": false,
+          "style": "Line"
+        },
+        "right": 1088,
+        "top": 36,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/On-the-fly path": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Pathfind to Pickup Pos": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Pathfind to Scoring Pos": {
+        "window": {
+          "visible": true
+        }
       }
     }
   }

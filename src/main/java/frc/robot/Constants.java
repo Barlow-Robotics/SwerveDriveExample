@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
@@ -46,8 +50,26 @@ public class Constants {
     public class AutoConstants {
         public static final double kMaxSpeedMetersPerSecond = DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 4; // Might need to change
         public static final double kMaxAngularSpeedRadiansPerSecond = 
-                DriveConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 10; // Might need to change
+                DriveConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 10; // Default is 540 degress
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; // Might need to change
-        public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4;
+        public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4; // default is 720 degrees
     }
+  public static final class Swerve {
+    public static final Translation2d flModuleOffset = new Translation2d(0.4, 0.4);
+    public static final Translation2d frModuleOffset = new Translation2d(0.4, -0.4);
+    public static final Translation2d blModuleOffset = new Translation2d(-0.4, 0.4);
+    public static final Translation2d brModuleOffset = new Translation2d(-0.4, -0.4);
+
+    public static final double maxModuleSpeed = 4.5; // M/S
+
+    public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(
+      new PIDConstants(5.0, 0, 0), // Translation constants 
+      new PIDConstants(5.0, 0, 0), // Rotation constants 
+      maxModuleSpeed, 
+      flModuleOffset.getNorm(), // Drive base radius (distance from center to furthest module) 
+      new ReplanningConfig()
+    );
+  }
+
+
 }

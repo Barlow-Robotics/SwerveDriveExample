@@ -4,177 +4,118 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.PathPoint;
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import java.util.List;
 
-import edu.wpi.first.math.controller.PIDController;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.commands.DriveRobot;
-import frc.robot.commands.InstrumentedSequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drive;
+// import frc.robot.subsystems.SwerveSubsystem;
 
-/* OVERALL TO DO
-* EHP need to turn drive into a command outside of RobotContainer -- done
-* EHP add the field into the simulation
-* EHP add simulation files and code
-* EHP set up networktables/smartdashboard
-* EHP auto???
-*/
-
+/**
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * subsystems, commands, and trigger mappings) should be declared here.
+ */
 public class RobotContainer {
+  public final Drive swerve = new Drive();
+  // The robot's subsystems and commands are defined here...
+  // private final SwerveSubsystem swerve = new SwerveSubsystem();
 
-    /********************************************************************/
-    /***** CONSTANTS *****/
+  private final SendableChooser<Command> autoChooser;
 
-    public static final int LDALeftStickX = 0; // LDA = Logitech Dual Action
-    public static final int LDALeftStickY = 1;
-    public static final int LDARightStickX = 2;
-    public static final int LDARightStickY = 3;
-    public static final int LDALeftTrigger = 7;
-    public static final int LDARightTrigger = 8;
-    public static final int LDAButtonA = 2;
-    public static final int LDAButtonB = 3;
-    public static final int LDAButtonX = 1;
-    public static final int LDAButtonY = 4;
-    public static final int LDALeftBumper = 5;
-    public static final int LDARightBumper = 6;
-    public static final int LDABackButton = 9;
-    public static final int LDAStartButton = 10;
-    public static final int LDALeftStick = 11;
-    public static final int LDARightStick = 12;
-    public static final double LDAForwardAxisAttenuation = -0.5;
-    public static final double LDALateralAxisAttenuation = 0.5;
-    public static final double LDAYawAxisAttenuation = 0.5;
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  public RobotContainer() {
+    // Register named commands
+    NamedCommands.registerCommand("marker1", Commands.print("Passed marker 1"));
+    NamedCommands.registerCommand("marker2", Commands.print("Passed marker 2"));
+    NamedCommands.registerCommand("print hello", Commands.print("hello"));
 
+    // Configure the trigger bindings
+    configureBindings();
 
-    public static final double xKP = 1.5; // change
-    public static final double yKP = 1.5; // change
-    public static final double turnKP = 0.5;
+    autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
+    SmartDashboard.putData("Auto Mode", autoChooser);
+  }
 
+  /**
+   * Use this method to define your trigger->command mappings. Triggers can be created via the
+   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+   * predicate, or via the named factories in {@link
+   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * joysticks}.
+   */
+  private void configureBindings() {
+    // Add a button to run the example auto to SmartDashboard, this will also be in the auto chooser built above
+    SmartDashboard.putData("Example Auto", new PathPlannerAuto("test"));
 
-    TrapezoidProfile.Constraints thetaConstraintsTrapezoidProfile = new TrapezoidProfile.Constraints(AutoConstants.kMaxAngularSpeedRadiansPerSecond,
-    AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
+    // Add a button to run pathfinding commands to SmartDashboard
+    SmartDashboard.putData("Pathfind to Pickup Pos", AutoBuilder.pathfindToPose(
+      new Pose2d(14.0, 6.5, Rotation2d.fromDegrees(0)), 
+      new PathConstraints(
+        4.0, 4.0, 
+        Units.degreesToRadians(360), Units.degreesToRadians(540)
+      ), 
+      0, 
+      2.0
+    ));
+    SmartDashboard.putData("Pathfind to Scoring Pos", AutoBuilder.pathfindToPose(
+      new Pose2d(2.15, 3.0, Rotation2d.fromDegrees(180)), 
+      new PathConstraints(
+        4.0, 4.0, 
+        Units.degreesToRadians(360), Units.degreesToRadians(540)
+      ), 
+      0, 
+      0
+    ));
 
-    PathPlannerTrajectory currentTrajectory = null;
-
-    PIDController xPIDController;
-    PIDController yPIDController;
-    PIDController turnPIDController;
-
-    final SendableChooser<String> pathChooser = new SendableChooser<String>();
-
-
-    /********************************************************************/
-    /********************************************************************/
-
-    public final Drive driveSub = new Drive();
-
-    PS4Controller driverController;
-
-
-    public RobotContainer() {
-        configureButtonBindings();
-        buildAutoOptions();
-
-        xPIDController = new PIDController(xKP, 0, 0);
-        yPIDController = new PIDController(yKP, 0, 0);
-        turnPIDController = new PIDController(turnKP, 0, 0);
-
-        driveSub.setDefaultCommand(
-                // The left stick controls translation of the robot.
-                // Turning is controlled by the X axis of the right stick.
-                new DriveRobot(
-                        driveSub, driverController, LDALeftStickY, LDALeftStickX, LDARightStickX, true));
-    }
-
-    private void configureButtonBindings() {
-        driverController = new PS4Controller(1);
-    }
-
-    public PathPlannerTrajectory getCurrentTrajectory() {
-        return currentTrajectory;
-    }
-    
-    private void buildAutoOptions() {
-        pathChooser.setDefaultOption("horizontalLine", "horizontalLine");
-        pathChooser.addOption("square", "square");
-        pathChooser.addOption("striaght", "striaght");
-        SmartDashboard.putData("Path Chooser", pathChooser);
-    }
-
-     
-    InstrumentedSequentialCommandGroup SquareAuto() {
-        InstrumentedSequentialCommandGroup theCommand = new InstrumentedSequentialCommandGroup();
-        
-        var squarePath = PathPlanner.loadPath("square", 1.0, 2.0, false);
-
-        theCommand.addCommands(new InstantCommand(() -> this.currentTrajectory = squarePath));
-        theCommand.addCommands(new InstantCommand(() -> driveSub.resetOdometry(squarePath.getInitialPose())));
-        theCommand.addCommands(new PPSwerveControllerCommand(
-            squarePath, 
-            driveSub::getPose, // Pose supplier
-            driveSub.kinematics, // SwerveDriveKinematics
-            xPIDController,
-            yPIDController,
-            turnPIDController, 
-            driveSub::setModuleStates, // Module states consumer
-            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub));
-
-        return theCommand;
-    }
-
-
-
-
-    InstrumentedSequentialCommandGroup customAuto(String pathName) {
-        InstrumentedSequentialCommandGroup theCmd = new InstrumentedSequentialCommandGroup();
-        
-        PathPlannerTrajectory autoPath = PathPlanner.loadPath(pathName, 1.0, 2.0, false);
-
-        theCmd.addCommands(new InstantCommand(() -> this.currentTrajectory = autoPath));
-        theCmd.addCommands(new InstantCommand(() -> driveSub.resetOdometry(autoPath.getInitialPose())));
-        theCmd.addCommands(new PPSwerveControllerCommand(
-            autoPath, 
-            driveSub::getPose, // Pose supplier
-            driveSub.kinematics, // SwerveDriveKinematics
-            xPIDController,
-            yPIDController,
-            turnPIDController, 
-            driveSub::setModuleStates, // Module states consumer
-            false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-            driveSub));
+    // Add a button to SmartDashboard that will create and follow an on-the-fly path
+    // This example will simply move the robot 2m forward of its current position
+    SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
+      Pose2d currentPose = swerve.getPose();
       
-        return theCmd;
-    }
+      // The rotation component in these poses represents the direction of travel
+      Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
+      Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
 
-    public Command getAutonomousCommand() {
-        String choice = pathChooser.getSelected();
-        return customAuto("horizontalLine");      
+      List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(startPos, endPos);
+      PathPlannerPath path = new PathPlannerPath(
+        bezierPoints, 
+        new PathConstraints(
+          4.0, 4.0, 
+          Units.degreesToRadians(360), Units.degreesToRadians(540)
+        ),  
+        new GoalEndState(0.0, currentPose.getRotation())
+      );
 
-        // if (choice == "square") {
-        //     return customAuto("horizontalLine");      
-        // } else if (choice == "horizontalLine") {
-        //     return customAuto("horizontalLine");      
-        // } else if (choice == "striaght") {
-        //     return customAuto("striaghtLine");
-        // } else {
-        //     System.out.println("Path not choosen");
-        //     return null;
-        // }
-    }
+      AutoBuilder.followPathWithEvents(path).schedule();
+    }));
+  }
+
+  /**
+   * Use this to pass the autonomous command to the main {@link Robot} class.
+   *
+   * @return the command to run in autonomous
+   */
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
+  }
 }

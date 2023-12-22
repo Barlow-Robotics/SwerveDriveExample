@@ -9,10 +9,10 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PS4Controller;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive;
 
-public class DriveRobot extends CommandBase {
+public class DriveRobot extends Command {
 
     Drive driveSub;
     PS4Controller driverController;
