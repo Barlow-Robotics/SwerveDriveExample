@@ -14,17 +14,18 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Get-1st-part"
+            "pathName": "testp1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Get-2nd-part"
+            "pathName": "testp2"
           }
         }
       ]
     }
   },
-  "folder": null
+  "folder": null,
+  "choreoAuto": false
 }

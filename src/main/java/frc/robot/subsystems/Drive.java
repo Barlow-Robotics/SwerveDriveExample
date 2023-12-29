@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -22,6 +23,10 @@ import frc.robot.Constants.CanIDs;
 import org.littletonrobotics.junction.Logger;
 import java.lang.Math;
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import frc.robot.Constants;
 
@@ -93,6 +98,7 @@ public class Drive extends SubsystemBase {
 
         navX = new AHRS(Port.kMXP);
         navX.reset();
+
         odometry = new SwerveDriveOdometry(
             kinematics,
             navX.getRotation2d(),
@@ -102,7 +108,6 @@ public class Drive extends SubsystemBase {
                     backLeft.getPosition(),
                     backRight.getPosition()
             });
-
     }
 
     @Override
@@ -116,16 +121,14 @@ public class Drive extends SubsystemBase {
                         backRight.getPosition()
                 });
 
-        Logger.getInstance().recordOutput("Pose", odometry.getPoseMeters());
+        Logger.recordOutput("Pose", odometry.getPoseMeters());
         SwerveModuleState[] swerveModuleActualStates = new SwerveModuleState[] {frontLeft.getState(), frontRight.getState(), backLeft.getState(), backRight.getState()};
-        Logger.getInstance().recordOutput("SwerveStates/ActualStates", swerveModuleActualStates);
-
+        Logger.recordOutput("SwerveStates/ActualStates", swerveModuleActualStates);
     }
 
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
-    
 
     public void resetOdometry(Pose2d pose) {
         odometry.resetPosition(
@@ -151,8 +154,24 @@ public class Drive extends SubsystemBase {
         backLeft.setDesiredState(swerveModuleDesiredStates[2]);
         backRight.setDesiredState(swerveModuleDesiredStates[3]);
 
-        Logger.getInstance().recordOutput("SwerveStates/DesiredStates", swerveModuleDesiredStates);
+        Logger.recordOutput("SwerveStates/DesiredStates", swerveModuleDesiredStates);
+    }
 
+    public void driveFieldRelative(ChassisSpeeds fieldRelativeSpeeds) {
+        driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds, getPose().getRotation()));
+    }
+
+    public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
+        ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
+    
+        SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(targetSpeeds);
+
+        SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, MaxSpeed);
+    
+        frontLeft.setDesiredState(targetStates[0]);
+        frontRight.setDesiredState(targetStates[1]);
+        backLeft.setDesiredState(targetStates[2]);
+        backRight.setDesiredState(targetStates[3]);
     }
 
     /**
@@ -176,6 +195,7 @@ public class Drive extends SubsystemBase {
         frontRight.resetEncoders();
         backRight.resetEncoders();
     }
+
     public void stopModules() {
         frontLeft.stop();
         frontRight.stop();
@@ -190,6 +210,22 @@ public class Drive extends SubsystemBase {
     public double getHeading() {
         return navX.getRotation2d().getDegrees();
     }
+
+    public SwerveModuleState getDriveRate() {
+        return frontLeft.getState();
+    }
+
+    // public SwerveModuleState[] getModuleStates() {
+    //     SwerveModuleState[] states = new SwerveModuleState[modules.length];
+    //     for (int i = 0; i < modules.length; i++) {
+    //       states[i] = modules[i].getState();
+    //     }
+    //     return states;
+    // }
+
+    // public ChassisSpeeds getSpeeds() {
+    //     return kinematics.toChassisSpeeds(getModuleStates());
+    // }
 
     public double getTurnRate() {
         return navX.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second

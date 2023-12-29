@@ -73,8 +73,8 @@ public class RobotContainerv2 {
     public static final double turnKP = 0.5;
 
 
-    TrapezoidProfile.Constraints thetaConstraintsTrapezoidProfile = new TrapezoidProfile.Constraints(AutoConstants.kMaxAngularSpeedRadiansPerSecond,
-    AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
+    TrapezoidProfile.Constraints thetaConstraintsTrapezoidProfile = new TrapezoidProfile.Constraints(AutoConstants.MaxAngularSpeedRadiansPerSecond,
+    AutoConstants.MaxAngularAccelerationRadiansPerSecondSquared);
 
     PathPlannerTrajectory currentTrajectory = null;
 

@@ -11,7 +11,8 @@
         "x": 3.125816042679634,
         "y": 4.630815344933067
       },
-      "isLocked": false
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -23,14 +24,32 @@
         "y": 4.631792437804787
       },
       "nextControl": null,
-      "isLocked": false
+      "isLocked": false,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "piceUpPiece",
+      "name": "marker1",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "marker1"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "marker2",
       "waypointRelativePos": 1.0,
       "command": {
         "type": "sequential",
@@ -39,13 +58,7 @@
             {
               "type": "named",
               "data": {
-                "name": "stopRobotMovement"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "PickUpCone"
+                "name": "marker2"
               }
             }
           ]
@@ -61,9 +74,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0
+    "rotation": 0,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": null,
-  "previewStartingState": null
+  "previewStartingState": null,
+  "useDefaultConstraints": false
 }
