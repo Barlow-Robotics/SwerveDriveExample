@@ -26,7 +26,7 @@ public class Constants {
         // Encoder = 1{locationOnBot}
         public static final int FrontLeftTurnEncoderID = 11;
         public static final int FrontRightTurnEncoderID = 12;
-        public static final int BackLeftTurnEncoderID = 50;
+        public static final int BackLeftTurnEncoderID = 13; //EHP why was this 50 before
         public static final int BackRightTurnEncoderID = 14;
 
         // DriveMotorID = 2{locationOnBot} // Base
@@ -44,7 +44,7 @@ public class Constants {
     }
 
     public class DriveConstants {
-        public static final double PhysicalMaxSpeedMetersPerSecond = 5; // Might need to change
+        public static final double PhysicalMaxSpeedMetersPerSecond = 4.0; // Might need to change
         public static final double PhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI; // Might need to change
     }
 

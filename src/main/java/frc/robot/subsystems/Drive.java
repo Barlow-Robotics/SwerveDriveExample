@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -15,20 +14,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.I2C.Port;
-import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanIDs;
 import org.littletonrobotics.junction.Logger;
 import java.lang.Math;
 import com.kauailabs.navx.frc.AHRS;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
-
-import frc.robot.Constants;
 
 
 public class Drive extends SubsystemBase {
@@ -42,13 +33,14 @@ public class Drive extends SubsystemBase {
     public static final boolean GyroReversed = false;
     public static final double kTrackWidth = 0.762;
 
-    // Distance between right and left wheels
-    public static final double kWheelBase = 0.762;
+    public static final double kWheelBase = 0.762; // Distance between right and left wheels
     public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
+    );
+    
     /*******************************************************************************/
     /*******************************************************************************/
 
@@ -59,7 +51,7 @@ public class Drive extends SubsystemBase {
             CanIDs.FrontLeftTurnEncoderID,
             Math.toDegrees(1.5171039327979088), 
             false
-            );
+    );
 
     private final SwerveModule frontRight = new SwerveModule(
             "frontRight",
@@ -67,7 +59,8 @@ public class Drive extends SubsystemBase {
             CanIDs.FrontRightTurnMotorID,
             CanIDs.FrontRightTurnEncoderID,
             Math.toDegrees(1.7456666082143784), 
-            true);
+            true)
+    ;
 
     private final SwerveModule backLeft = new SwerveModule(
             "backLeft",
@@ -75,7 +68,8 @@ public class Drive extends SubsystemBase {
             CanIDs.BackLeftTurnMotorID,
             CanIDs.BackLeftTurnEncoderID,
             Math.toDegrees(-2.7626938149333), 
-            false);
+            false
+    );
 
     private final SwerveModule backRight = new SwerveModule(
             "backRight",
@@ -83,13 +77,12 @@ public class Drive extends SubsystemBase {
             CanIDs.BackRightTurnMotorID,
             CanIDs.BackRightTurnEncoderID,
             Math.toDegrees(-2.305568464100361),
-            true);
+            true
+    );
 
     private AHRS navX;
-//     private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-//     private final ADXRS450_GyroSim gyroSim = new ADXRS450_GyroSim(gyro);
 
-    private final SwerveDriveOdometry odometry ;
+    private final SwerveDriveOdometry odometry;
 
     private SwerveModulePosition[] previousPositions = new SwerveModulePosition[4] ;
 
@@ -174,11 +167,6 @@ public class Drive extends SubsystemBase {
         backRight.setDesiredState(targetStates[3]);
     }
 
-    /**
-     * Sets the swerve ModuleStates.
-     *
-     * @param desiredStates The desired SwerveModule states.
-     */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(
                 desiredStates, MaxSpeed);
@@ -211,11 +199,7 @@ public class Drive extends SubsystemBase {
         return navX.getRotation2d().getDegrees();
     }
 
-    public SwerveModuleState getDriveRate() {
-        return frontLeft.getState();
-    }
-
-    // public SwerveModuleState[] getModuleStates() {
+    // public SwerveModuleState[] getModuleStates() { // EHP work in progress for autobuilder
     //     SwerveModuleState[] states = new SwerveModuleState[modules.length];
     //     for (int i = 0; i < modules.length; i++) {
     //       states[i] = modules[i].getState();

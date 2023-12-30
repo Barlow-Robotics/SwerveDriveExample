@@ -49,10 +49,8 @@ public class SwerveModule {
 
     /* DRIVE ENCODER */
     private static final double DriveKP = 0.04; // Need to change
-    // private static final double DriveKP = 0; // Need to change
     private static final double DriveKI = 0.0015;
     private static final double DriveKD = 0;
-    // private static final double DriveIZone = 0;
     private static final double DriveIZone = 0.15;
     private static final double DriveFF = 1.0 / MaxVelocityPerSecond;
     // private static final double DriveFF = 0.01;
@@ -134,7 +132,6 @@ public class SwerveModule {
 
         canCoderConfiguration.MagnetSensor = magnetConfig;
 
-
         // need to be added
         // canCoderConfiguration.initializationStrategy =
         // SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be
@@ -171,7 +168,7 @@ public class SwerveModule {
 
         // drivePIDController.setReference(0, ControlType.kVelocity);
 
-        Logger.getInstance().recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
+        Logger.recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
