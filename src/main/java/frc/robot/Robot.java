@@ -19,20 +19,22 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;;
 
-
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the
+ * name of this class or
+ * the package after creating this project, you must also update the
+ * build.gradle file in the
  * project.
  */
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
+    private Command autonomousCommand;
 
-  private RobotContainer robotContainer;
+    private RobotContainer robotContainer;
 
-  // private Field2d field;
-  Drive driveSub;
+    // private Field2d field;
+    Drive driveSub;
 
   @Override
   public void robotInit() {
@@ -40,8 +42,8 @@ public class Robot extends LoggedRobot {
     // driveSub = new Drive();
     // Logger logger = Logger.getInstance();
 
-    // field = new Field2d();
-    // SmartDashboard.putData("Field", field) ;
+        // field = new Field2d();
+        // SmartDashboard.putData("Field", field) ;
 
     Logger.recordMetadata("ProjectName", "WPI-Swerve-Prototype"); // Set a metadata value
 
@@ -57,70 +59,76 @@ public class Robot extends LoggedRobot {
     }
     
     // Logger.getInstance().disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
-    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+    Logger.getInstance().start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
   }
 
-  @Override
-  public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
+    @Override
+    public void robotPeriodic() {
+        CommandScheduler.getInstance().run();
 
-    // field.setRobotPose(robotContainer.driveSub.getPose());
-    // Push the trajectory to Field2d.
-// if (robotContainer.getCurrentTrajectory() != null) {
-//     // field.getObject("traj").setTrajectory(robotContainer.getCurrentTrajectory());
-// }
-  }
-
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
-    /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector",
-     * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-     * = new MyAutoCommand(); break; case "Default Auto": default:
-     * autonomousCommand = new ExampleCommand(); break; }
-     */
-
-    if (autonomousCommand != null) {
-      autonomousCommand.schedule();
+        // field.setRobotPose(robotContainer.driveSub.getPose());
+        // Push the trajectory to Field2d.
+        // if (robotContainer.getCurrentTrajectory() != null) {
+        // //
+        // field.getObject("traj").setTrajectory(robotContainer.getCurrentTrajectory());
+        // }
     }
-  }
 
-  @Override
-  public void autonomousPeriodic() {}
-
-  @Override
-  public void teleopInit() {
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
+    @Override
+    public void disabledInit() {
     }
-  }
 
-  @Override
-  public void teleopPeriodic() {}
+    @Override
+    public void disabledPeriodic() {
+    }
 
-  @Override
-  public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
-  }
+    @Override
+    public void autonomousInit() {
+        autonomousCommand = robotContainer.getAutonomousCommand();
+        /*
+         * String autoSelected = SmartDashboard.getString("Auto Selector",
+         * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
+         * = new MyAutoCommand(); break; case "Default Auto": default:
+         * autonomousCommand = new ExampleCommand(); break; }
+         */
 
-  @Override
-  public void testPeriodic() {}
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
+        }
+    }
 
-  @Override
-  public void simulationInit() {
-    robotContainer.driveSub.simulationInit();
-  }
+    @Override
+    public void autonomousPeriodic() {
+    }
 
-  @Override
-  public void simulationPeriodic() {
-    REVPhysicsSim.getInstance().run();
-  }
+    @Override
+    public void teleopInit() {
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
+    }
+
+    @Override
+    public void teleopPeriodic() {
+    }
+
+    @Override
+    public void testInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
+
+    @Override
+    public void testPeriodic() {
+    }
+
+    @Override
+    public void simulationInit() {
+        robotContainer.driveSub.simulationInit();
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        REVPhysicsSim.getInstance().run();
+    }
 }

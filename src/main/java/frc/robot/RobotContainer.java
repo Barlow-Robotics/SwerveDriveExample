@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PS4Controller;
-// import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,9 +33,8 @@ import frc.robot.subsystems.Drive;
 
 public class RobotContainer {
 
-    public final Drive driveSub = new Drive();
-    PS4Controller driverController;
-
+    /********************************************************************/
+    /***** CONSTANTS *****/
 
     public static final int LDALeftStickX = 0; // LDA = Logitech Dual Action
     public static final int LDALeftStickY = 1;
@@ -58,7 +56,15 @@ public class RobotContainer {
     public static final double LDALateralAxisAttenuation = 0.5;
     public static final double LDAYawAxisAttenuation = 0.5;
 
+    /********************************************************************/
+    /********************************************************************/
 
+    /* SUBSYSTEMS */
+    public final Drive driveSub = new Drive();
+    PS4Controller driverController;
+
+
+ 
 
     // private final SendableChooser<Command> autoChooser;
 
@@ -70,10 +76,7 @@ public class RobotContainer {
                 // The left stick controls translation of the robot.
                 // Turning is controlled by the X axis of the right stick.
                 new DriveRobot(
-                        driveSub, driverController, LDALeftStickY, LDALeftStickX, LDARightStickX, true)
-                // new DriveRobot(
-                //         driveSub, driverController, LDALeftStickY, LDALeftStickX, LDARightStickX, false)
-        );
+                        driveSub, driverController, LDALeftStickY, LDALeftStickX, LDARightStickX, true));
 
         // Register named commands
 
@@ -93,10 +96,10 @@ public class RobotContainer {
         //         this // Reference to this subsystem to set requirements
         // );
 
-        NamedCommands.registerCommand("marker1", Commands.print("Passed marker 1"));
-        NamedCommands.registerCommand("marker2", Commands.print("Passed marker 2"));
-        NamedCommands.registerCommand("marker3", Commands.print("Passed marker 3"));
-        NamedCommands.registerCommand("marker4", Commands.print("Passed marker 4"));
+        // NamedCommands.registerCommand("marker1", Commands.print("Passed marker 1"));
+        // NamedCommands.registerCommand("marker2", Commands.print("Passed marker 2"));
+        // NamedCommands.registerCommand("marker3", Commands.print("Passed marker 3"));
+        // NamedCommands.registerCommand("marker4", Commands.print("Passed marker 4"));
 
         // autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
         // SmartDashboard.putData("Auto Mode", autoChooser);
@@ -104,12 +107,13 @@ public class RobotContainer {
 
     private void configureBindings() {
 
-        driverController = new PS4Controller(1) ;
-        // // Add a button to run the example auto to SmartDashboard, this will also be in
-        // // the auto chooser built above
+        driverController = new PS4Controller(1);
+
+        // Add a button to run the example auto to SmartDashboard, this will also be in
+        // the auto chooser built above
         // SmartDashboard.putData("Example Auto", new PathPlannerAuto("test"));
 
-        // // Add a button to run pathfinding commands to SmartDashboard
+        // Add a button to run pathfinding commands to SmartDashboard
         // SmartDashboard.putData("Pathfind to Pickup Pos", 
         //     AutoBuilder.pathfindToPose(
         //         new Pose2d(14.0, 6.5, Rotation2d.fromDegrees(0)),
@@ -128,8 +132,8 @@ public class RobotContainer {
         //         0,
         //         0));
 
-        // // Add a button to SmartDashboard that will create and follow an on-the-fly path
-        // // This example will simply move the robot 2m forward of its current position
+        // Add a button to SmartDashboard that will create and follow an on-the-fly path
+        // This example will simply move the robot 2m forward of its current position
         // SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
         //     Pose2d currentPose = driveSub.getPose();
 
@@ -152,6 +156,6 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         // return autoChooser.getSelected();
-        return null ;
+        return null;
     }
 }

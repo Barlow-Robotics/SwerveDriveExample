@@ -55,11 +55,6 @@ public class DriveRobot extends Command {
         double rawY = -driverController.getLeftX() ;
         double rawRot = -driverController.getRightX() ; 
 
-        Logger.getInstance().recordOutput("Raw Yaw Input", rawRot);
-        Logger.getInstance().recordOutput("Raw XSpeed", rawX);
-        Logger.getInstance().recordOutput("Raw YSpeed", rawY);
-
-
         double XSpeed = MathUtil.applyDeadband(rawX, DeadBand) * MaxVelocity;
         double YSpeed = MathUtil.applyDeadband(rawY, DeadBand) * MaxVelocity;
         double Rot = MathUtil.applyDeadband(rawRot, 2*DeadBand) * MaxRotVelocity;
@@ -67,9 +62,13 @@ public class DriveRobot extends Command {
         driveSub.drive(XSpeed, YSpeed, Rot, FieldRelative);
 
         /* LOGGING */
-        Logger.getInstance().recordOutput("Yaw Input", Rot);
-        Logger.getInstance().recordOutput("XSpeed", YSpeed);
-        Logger.getInstance().recordOutput("YSpeed", XSpeed);
+        Logger.recordOutput("Raw Yaw Input", rawRot);
+        Logger.recordOutput("Raw XSpeed", rawX);
+        Logger.recordOutput("Raw YSpeed", rawY);
+
+        Logger.recordOutput("Yaw Input", Rot);
+        Logger.recordOutput("XSpeed", YSpeed);
+        Logger.recordOutput("YSpeed", XSpeed);
     }
 
     @Override

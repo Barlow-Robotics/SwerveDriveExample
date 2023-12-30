@@ -50,10 +50,8 @@ public class SwerveModule {
 
     /* DRIVE ENCODER */
     private static final double DriveKP = 0.04; // Need to change
-    // private static final double DriveKP = 0; // Need to change
     private static final double DriveKI = 0.0015;
     private static final double DriveKD = 0;
-    // private static final double DriveIZone = 0;
     private static final double DriveIZone = 0.15;
     private static final double DriveFF = 1.0 / MaxVelocityPerSecond;
     // private static final double DriveFF = 0.01;
@@ -138,7 +136,6 @@ public class SwerveModule {
         magnetConfig.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
         canCoderConfiguration.MagnetSensor = magnetConfig;
-
 
         // need to be added
         // canCoderConfiguration.initializationStrategy =
