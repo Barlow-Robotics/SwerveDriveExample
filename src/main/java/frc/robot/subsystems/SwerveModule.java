@@ -34,6 +34,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 
 public class SwerveModule {
     /**********************************************************************/
@@ -129,7 +130,11 @@ public class SwerveModule {
         var canCoderConfiguration = new CANcoderConfiguration();
         MagnetSensorConfigs magnetConfig = new MagnetSensorConfigs();
         magnetConfig.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-        magnetConfig.MagnetOffset = magnetOffset;
+        if (!Robot.isSimulation()) {
+            magnetConfig.MagnetOffset = magnetOffset;
+        } else {
+            magnetConfig.MagnetOffset = 0.0;
+        }
         magnetConfig.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
         canCoderConfiguration.MagnetSensor = magnetConfig;
@@ -142,6 +147,7 @@ public class SwerveModule {
         // canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
 
         turnEncoder.getConfigurator().apply(canCoderConfiguration);
+        turnEncoder.setPosition(0.0, 0.1) ;
 
         turnPIDController = new ProfiledPIDController(
                 1,
@@ -154,12 +160,12 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
+                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()*Math.PI));
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
+                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()*Math.PI));
     }
 
     public void setDesiredState(SwerveModuleState desiredState) {
@@ -171,7 +177,7 @@ public class SwerveModule {
 
         // drivePIDController.setReference(0, ControlType.kVelocity);
 
-        Logger.getInstance().recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
+        Logger.recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
@@ -199,9 +205,10 @@ public class SwerveModule {
             } else {
                 rawPosition = (int) ((angle / Math.PI) * 2048.0);
             }
-            encoderSim.setRawPosition(rawPosition);
+            // encoderSim.setRawPosition(rawPosition);
+            encoderSim.setRawPosition(state.angle.getDegrees()/180.0);
             Logger.recordOutput("CANCoder " + swerveName,
-                    turnEncoder.getAbsolutePosition());
+                    turnEncoder.getAbsolutePosition().getValueAsDouble());
             Logger.recordOutput("CANCoder Raw " + swerveName, rawPosition);
             Logger.recordOutput("Module Desired State Angle" + swerveName,
                     desiredState.angle.getRadians());

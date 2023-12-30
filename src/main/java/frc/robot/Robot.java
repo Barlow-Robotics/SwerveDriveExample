@@ -37,27 +37,27 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
-    driveSub = new Drive();
-    Logger logger = Logger.getInstance();
+    // driveSub = new Drive();
+    // Logger logger = Logger.getInstance();
 
     // field = new Field2d();
     // SmartDashboard.putData("Field", field) ;
 
-    logger.recordMetadata("ProjectName", "WPI-Swerve-Prototype"); // Set a metadata value
+    Logger.recordMetadata("ProjectName", "WPI-Swerve-Prototype"); // Set a metadata value
 
     if (isReal()) {
-        Logger.getInstance().addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
-        Logger.getInstance().addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        Logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
         new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
     } else {
         // setUseTiming(false); // Run as fast as possible
         // String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
-        logger.addDataReceiver(new WPILOGWriter(""));
-        logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new WPILOGWriter(""));
+        Logger.addDataReceiver(new NT4Publisher());
     }
     
     // Logger.getInstance().disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
-    Logger.getInstance().start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
   }
 
