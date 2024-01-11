@@ -49,7 +49,7 @@ public class Drive extends SubsystemBase {
             CanIDs.FrontLeftDriveMotorID,
             CanIDs.FrontLeftTurnMotorID,
             CanIDs.FrontLeftTurnEncoderID,
-            Math.toDegrees(1.5171039327979088), 
+            Math.toDegrees(1.5171039327979088) / 360.0, 
             false
     );
 
@@ -58,7 +58,7 @@ public class Drive extends SubsystemBase {
             CanIDs.FrontRightDriveMotorID,
             CanIDs.FrontRightTurnMotorID,
             CanIDs.FrontRightTurnEncoderID,
-            Math.toDegrees(1.7456666082143784), 
+            Math.toDegrees(1.7456666082143784) / 360.0, 
             true)
     ;
 
@@ -67,7 +67,7 @@ public class Drive extends SubsystemBase {
             CanIDs.BackLeftDriveMotorID,
             CanIDs.BackLeftTurnMotorID,
             CanIDs.BackLeftTurnEncoderID,
-            Math.toDegrees(-2.7626938149333), 
+            Math.toDegrees(-2.7626938149333) / 360.0, 
             false
     );
 
@@ -76,7 +76,7 @@ public class Drive extends SubsystemBase {
             CanIDs.BackRightDriveMotorID,
             CanIDs.BackRightTurnMotorID,
             CanIDs.BackRightTurnEncoderID,
-            Math.toDegrees(-2.305568464100361),
+            Math.toDegrees(-2.305568464100361) / 360.0,
             true
     );
 

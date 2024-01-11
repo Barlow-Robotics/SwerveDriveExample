@@ -48,7 +48,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("ProjectName", "WPI-Swerve-Prototype"); // Set a metadata value
 
     if (isReal()) {
-        Logger.addDataReceiver(new WPILOGWriter("/media/sda1/")); // Log to a USB stick
+        Logger.addDataReceiver(new WPILOGWriter("/media/sda2/")); // Log to a USB stick
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
         new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
     } else {
@@ -59,7 +59,7 @@ public class Robot extends LoggedRobot {
     }
     
     // Logger.getInstance().disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
-    Logger.getInstance().start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
   }
 

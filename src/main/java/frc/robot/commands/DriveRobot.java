@@ -7,7 +7,6 @@ package frc.robot.commands;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive;
@@ -73,6 +72,7 @@ public class DriveRobot extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        driveSub.drive(0, 0, 0, true);
     }
 
     @Override

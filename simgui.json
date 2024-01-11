@@ -10,6 +10,11 @@
         "header": {
           "open": true
         }
+      },
+      "SPARK MAX [31]": {
+        "header": {
+          "open": true
+        }
       }
     }
   },
@@ -25,11 +30,6 @@
     },
     "windows": {
       "/SmartDashboard/Auto Mode": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Example Auto": {
         "window": {
           "visible": true
         }
@@ -50,21 +50,6 @@
         "right": 1088,
         "top": 36,
         "width": 16.541748046875,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/On-the-fly path": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Pathfind to Pickup Pos": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Pathfind to Scoring Pos": {
         "window": {
           "visible": true
         }

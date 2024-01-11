@@ -19,10 +19,10 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -77,7 +77,7 @@ public class SwerveModule {
     private final RelativeEncoder driveEncoder;
     private final CANcoder turnEncoder;
 
-    public final SparkMaxPIDController drivePIDController;
+    public final SparkPIDController drivePIDController;
     public final ProfiledPIDController turnPIDController;
 
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.4); // Need to change these #'s
@@ -144,7 +144,7 @@ public class SwerveModule {
         // canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
 
         turnEncoder.getConfigurator().apply(canCoderConfiguration);
-        turnEncoder.setPosition(0.0, 0.1) ;
+        // turnEncoder.setPosition(0.0, 0.1) ;
 
         turnPIDController = new ProfiledPIDController(
                 1,
@@ -172,14 +172,20 @@ public class SwerveModule {
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
                 new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
 
+        // SwerveModuleState state = desiredState;  // wpk temp
+
+
+
         // drivePIDController.setReference(0, ControlType.kVelocity);
 
         Logger.recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        final double turnOutput = turnPIDController.calculate(turnEncoder.getAbsolutePosition().getValueAsDouble(),
-                state.angle.getRadians());
+        // turnPIDController.setGoal(state.angle.getRadians());
+        final double turnOutput = turnPIDController.calculate(
+            turnEncoder.getAbsolutePosition().getValueAsDouble()* 2.0 * Math.PI,
+            state.angle.getRadians());
 
         final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
         turnMotor.setVoltage(turnOutput + turnFF);

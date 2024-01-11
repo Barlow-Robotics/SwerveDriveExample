@@ -61,10 +61,11 @@ public class RobotContainer {
 
     /* SUBSYSTEMS */
     public final Drive driveSub = new Drive();
-    PS4Controller driverController;
+    
+    /* CONTROLLERS */
+    PS4Controller driverController; 
 
-
- 
+    /* BUTTONS */
 
     // private final SendableChooser<Command> autoChooser;
 
