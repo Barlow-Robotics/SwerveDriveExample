@@ -9,24 +9,17 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 public class Constants {
-
     public static final double SecondsPerMinute = 60;
 
     public class CanIDs {
-        /* DRIVE */
-
-        // LeftFront = 1
-        // rightFront = 2
-        // leftBack = 3
-        // rightBack = 4
+        /***************************** DRIVE *****************************/
 
         // Encoder = 1{locationOnBot}
         public static final int FrontLeftTurnEncoderID = 11;
         public static final int FrontRightTurnEncoderID = 12;
-        public static final int BackLeftTurnEncoderID = 13; //EHP why was this 50 before
+        public static final int BackLeftTurnEncoderID = 13;
         public static final int BackRightTurnEncoderID = 14;
 
         // DriveMotorID = 2{locationOnBot} // Base
@@ -44,20 +37,16 @@ public class Constants {
     }
 
     public class DriveConstants {
-        public static final double PhysicalMaxSpeedMetersPerSecond = 4.0; // Might need to change
-        public static final double PhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI; // Might need to change
+        public static final double PhysicalMaxSpeedMetersPerSecond = 4.0; // CHANGE
+        public static final double PhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI; // CHANGE
     }
 
     public class AutoConstants {
-        public static final double MaxSpeedMetersPerSecond = DriveConstants.PhysicalMaxSpeedMetersPerSecond / 4; // Might
-                                                                                                                 // need
-                                                                                                                 // to
-                                                                                                                 // change
+        public static final double MaxSpeedMetersPerSecond = DriveConstants.PhysicalMaxSpeedMetersPerSecond / 4; // CHANGE
         public static final double MaxAngularSpeedRadiansPerSecond = DriveConstants.PhysicalMaxAngularSpeedRadiansPerSecond
                 / 10; // Default is 540 degress
-        public static final double MaxAccelerationMetersPerSecondSquared = 3; // Might need to change
-        public static final double MaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4; // default is 720
-                                                                                                // degrees
+        public static final double MaxAccelerationMetersPerSecondSquared = 3; // CHANGE
+        public static final double MaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4; // default is 720 degrees
     }
 
     public static final class Swerve {
@@ -75,5 +64,4 @@ public class Constants {
                 flModuleOffset.getNorm(), // Drive base radius (distance from center to furthest module)
                 new ReplanningConfig());
     }
-
 }

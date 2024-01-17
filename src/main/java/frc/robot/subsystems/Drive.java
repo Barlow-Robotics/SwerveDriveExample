@@ -24,8 +24,8 @@ import com.kauailabs.navx.frc.AHRS;
 
 public class Drive extends SubsystemBase {
 
-    /*******************************************************************************/
-    /***** CONSTANTS *****/
+    /*********************************************************************/
+    /***************************** CONSTANTS *****************************/
 
     public static final double MaxSpeed = 4.0; // meters per second
     public static final double MaxAngularSpeed = Math.PI; // 1/2 rotation per second
@@ -199,18 +199,6 @@ public class Drive extends SubsystemBase {
         return navX.getRotation2d().getDegrees();
     }
 
-    // public SwerveModuleState[] getModuleStates() { // EHP work in progress for autobuilder
-    //     SwerveModuleState[] states = new SwerveModuleState[modules.length];
-    //     for (int i = 0; i < modules.length; i++) {
-    //       states[i] = modules[i].getState();
-    //     }
-    //     return states;
-    // }
-
-    // public ChassisSpeeds getSpeeds() {
-    //     return kinematics.toChassisSpeeds(getModuleStates());
-    // }
-
     public double getTurnRate() {
         return navX.getRate() * (GyroReversed ? -1.0 : 1.0); // degrees per second
     }
@@ -249,7 +237,6 @@ public class Drive extends SubsystemBase {
         int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
         SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
         angle.set(navX.getAngle() - Units.radiansToDegrees(twist.dtheta));
-        // gyroSim.setAngle( navX.getAngle() - Units.radiansToDegrees(twist.dtheta)) ;
     }
     
 }

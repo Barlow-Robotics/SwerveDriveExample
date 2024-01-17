@@ -10,39 +10,32 @@ import java.util.function.Consumer;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
+// NOTE:  Consider using this command inline, rather than writing a subclass.  For more information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class InstrumentedSequentialCommandGroup extends Command {
-  private final List<Command> m_commands = new ArrayList<>();
-  private int m_currentCommandIndex = -1;
-  private boolean m_runWhenDisabled = true;
-  private InterruptionBehavior m_interruptBehavior = InterruptionBehavior.kCancelIncoming;
+  private final List<Command> commandList = new ArrayList<>();
+  private int currentCommandIndex = -1;
+  private boolean runWhenDisabled = true;
+  private InterruptionBehavior interruptBehavior = InterruptionBehavior.kCancelIncoming;
 
   private final List<Consumer<Command>> m_initActions = new ArrayList<>();
   private final List<Consumer<Command>> m_finishActions = new ArrayList<>();
 
-
   /**
-   * Creates a new SequentialCommandGroup. The given commands will be run sequentially, with the
-   * composition finishing when the last command finishes.
-   *
+   * Creates a new SequentialCommandGroup. The given commands will be run sequentially,
+   * with the composition finishing when the last command finishes.
    * @param commands the commands to include in this composition.
    */
   public InstrumentedSequentialCommandGroup(Command... commands) {
     addCommands(commands);
   }
 
-
   public final void addCommands(Command... commands) {
-    if (m_currentCommandIndex != -1) {
+    if (currentCommandIndex != -1) {
       throw new IllegalStateException(
           "Commands cannot be added to a composition while it's running");
     }
@@ -50,31 +43,31 @@ public class InstrumentedSequentialCommandGroup extends Command {
     CommandScheduler.getInstance().registerComposedCommands(commands);
 
     for (Command command : commands) {
-      m_commands.add(command);
+      commandList.add(command);
       m_requirements.addAll(command.getRequirements());
-      m_runWhenDisabled &= command.runsWhenDisabled();
+      runWhenDisabled &= command.runsWhenDisabled();
       if (command.getInterruptionBehavior() == InterruptionBehavior.kCancelSelf) {
-        m_interruptBehavior = InterruptionBehavior.kCancelSelf;
+        interruptBehavior = InterruptionBehavior.kCancelSelf;
       }
     }
   }
 
   @Override
   public final void initialize() {
-    m_currentCommandIndex = 0;
+    currentCommandIndex = 0;
 
-    if (!m_commands.isEmpty()) {
-      m_commands.get(0).initialize();  
+    if (!commandList.isEmpty()) {
+      commandList.get(0).initialize();
     }
   }
 
   @Override
   public final void execute() {
-    if (m_commands.isEmpty()) {
+    if (commandList.isEmpty()) {
       return;
     }
 
-    Command currentCommand = m_commands.get(m_currentCommandIndex);
+    Command currentCommand = commandList.get(currentCommandIndex);
 
     currentCommand.execute();
     if (currentCommand.isFinished()) {
@@ -83,11 +76,11 @@ public class InstrumentedSequentialCommandGroup extends Command {
         action.accept(currentCommand);
       }
 
-      m_currentCommandIndex++;
-      if (m_currentCommandIndex < m_commands.size()) {
-        m_commands.get(m_currentCommandIndex).initialize();
+      currentCommandIndex++;
+      if (currentCommandIndex < commandList.size()) {
+        commandList.get(currentCommandIndex).initialize();
         for (Consumer<Command> action : m_initActions) {
-          action.accept(m_commands.get(m_currentCommandIndex));
+          action.accept(commandList.get(currentCommandIndex));
         }
       }
     }
@@ -96,36 +89,35 @@ public class InstrumentedSequentialCommandGroup extends Command {
   @Override
   public final void end(boolean interrupted) {
     if (interrupted
-        && !m_commands.isEmpty()
-        && m_currentCommandIndex > -1
-        && m_currentCommandIndex < m_commands.size()) {
-      m_commands.get(m_currentCommandIndex).end(true);
+        && !commandList.isEmpty()
+        && currentCommandIndex > -1
+        && currentCommandIndex < commandList.size()) {
+      commandList.get(currentCommandIndex).end(true);
     }
-    m_currentCommandIndex = -1;
+    currentCommandIndex = -1;
   }
 
   @Override
   public final boolean isFinished() {
-    return m_currentCommandIndex == m_commands.size();
+    return currentCommandIndex == commandList.size();
   }
 
   @Override
   public boolean runsWhenDisabled() {
-    return m_runWhenDisabled;
+    return runWhenDisabled;
   }
 
   @Override
   public InterruptionBehavior getInterruptionBehavior() {
-    return m_interruptBehavior;
+    return interruptBehavior;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
 
-    builder.addIntegerProperty("index", () -> m_currentCommandIndex, null);
+    builder.addIntegerProperty("index", () -> currentCommandIndex, null);
   }
-
 
   public void onCommandInitialize(Consumer<Command> action) {
     m_initActions.add(requireNonNullParam(action, "action", "onCommandInitialize"));
@@ -134,8 +126,5 @@ public class InstrumentedSequentialCommandGroup extends Command {
   public void onCommandFinish(Consumer<Command> action) {
     m_finishActions.add(requireNonNullParam(action, "action", "onCommandFinish"));
   }
-
-
-
 
 }

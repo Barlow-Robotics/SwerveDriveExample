@@ -5,11 +5,6 @@
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
-import com.ctre.phoenix6.sim.DeviceType;
-// import com.ctre.phoenix6.sensors.AbsoluteSensorRange;
-// import com.ctre.phoenix6.sensors.CANCoderConfiguration;
-// import com.ctre.phoenix6.sensors.CANCoderSimCollection;
-// import com.ctre.phoenix6.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -37,8 +32,8 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 
 public class SwerveModule {
-    /**********************************************************************/
-    /***** CONSTANTS *****/
+    /*********************************************************************/
+    /***************************** CONSTANTS *****************************/
 
     private static final double WheelRadius = Units.inchesToMeters(2.0);
     private static final double WheelCircumference = 2.0 * WheelRadius * Math.PI;
@@ -49,12 +44,11 @@ public class SwerveModule {
     public static final double MaxVelocityPerSecond = MaxRPM * VelocityConversionFactor;
 
     /* DRIVE ENCODER */
-    private static final double DriveKP = 0.04; // Need to change
+    private static final double DriveKP = 0.04; // REQUIRES TUNING 
     private static final double DriveKI = 0.0015;
     private static final double DriveKD = 0;
     private static final double DriveIZone = 0.15;
     private static final double DriveFF = 1.0 / MaxVelocityPerSecond;
-    // private static final double DriveFF = 0.01;
 
     /* TURN ENCODER */
     private static final int CANCoderResolution = 4096;
@@ -69,17 +63,13 @@ public class SwerveModule {
     /**********************************************************************/
     /**********************************************************************/
 
-    // private boolean reversedValue;
-
     private final CANSparkMax driveMotor;
-    private final CANSparkMax turnMotor;
-
     private final RelativeEncoder driveEncoder;
-    private final CANcoder turnEncoder;
-
     public final SparkPIDController drivePIDController;
-    public final ProfiledPIDController turnPIDController;
 
+    private final CANSparkMax turnMotor;
+    private final CANcoder turnEncoder;
+    public final ProfiledPIDController turnPIDController;
     private final SimpleMotorFeedforward TurnFF = new SimpleMotorFeedforward(0, 0.4); // Need to change these #'s
 
     private String swerveName;
@@ -92,7 +82,7 @@ public class SwerveModule {
             double magnetOffset,
             boolean reversed) {
 
-        // Set up drive motor and encoder
+        /* Set up drive motor and encoder */
         swerveName = name;
         driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
         driveMotor.restoreFactoryDefaults();
@@ -100,16 +90,15 @@ public class SwerveModule {
         driveMotor.setInverted(reversed);
 
         driveEncoder = driveMotor.getEncoder();
+        driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
 
         double localPositionConversionFactor = PositionConversionFactor;
-
         if (RobotBase.isSimulation()) {
             localPositionConversionFactor *= 1000;
         }
-        driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
         driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
 
-        // Config drive motor PID 
+        /* Config drive motor PID */
         drivePIDController = driveMotor.getPIDController();
         drivePIDController.setP(DriveKP);
         drivePIDController.setI(DriveKI);
@@ -118,7 +107,7 @@ public class SwerveModule {
         drivePIDController.setFF(DriveFF);
         drivePIDController.setOutputRange(-1, 1);
 
-        // Set up turn motor and encoder
+        /* Set up turn motor and encoder */
         turnMotor = new CANSparkMax(turningMotorID, MotorType.kBrushless);
         turnMotor.restoreFactoryDefaults();
         turnMotor.setIdleMode(IdleMode.kBrake);
@@ -139,12 +128,10 @@ public class SwerveModule {
 
         // need to be added
         // canCoderConfiguration.initializationStrategy =
-        // SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be
-        // absolute zero
+        // SensorInitializationStrategy.BootToAbsolutePosition; // BW sets sensor to be absolute zero
         // canCoderConfiguration.sensorCoefficient = Math.PI / 2048.0;
 
         turnEncoder.getConfigurator().apply(canCoderConfiguration);
-        // turnEncoder.setPosition(0.0, 0.1) ;
 
         turnPIDController = new ProfiledPIDController(
                 1,
@@ -157,12 +144,14 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()*Math.PI));
+                driveEncoder.getVelocity(),
+                new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble() * Math.PI));
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                driveEncoder.getPosition(), new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()*Math.PI));
+                driveEncoder.getPosition(),
+                new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble() * Math.PI));
     }
 
     public void setDesiredState(SwerveModuleState desiredState) {
@@ -172,33 +161,20 @@ public class SwerveModule {
         SwerveModuleState state = SwerveModuleState.optimize(desiredState,
                 new Rotation2d(turnEncoder.getAbsolutePosition().getValueAsDouble()));
 
-        // SwerveModuleState state = desiredState;  // wpk temp
-
-
-
-        // drivePIDController.setReference(0, ControlType.kVelocity);
+        // SwerveModuleState state = desiredState; // wpk temp
 
         Logger.recordOutput(swerveName + " Drive velocity", driveMotor.getEncoder().getVelocity());
 
         drivePIDController.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
 
-        // turnPIDController.setGoal(state.angle.getRadians());
         final double turnOutput = turnPIDController.calculate(
-            turnEncoder.getAbsolutePosition().getValueAsDouble()* 2.0 * Math.PI,
-            state.angle.getRadians());
+                turnEncoder.getAbsolutePosition().getValueAsDouble() * 2.0 * Math.PI,
+                state.angle.getRadians());
 
         final double turnFF = TurnFF.calculate(turnPIDController.getSetpoint().velocity);
         turnMotor.setVoltage(turnOutput + turnFF);
 
-        // turnMotor.setVoltage(0.0);
-
-        // turnPIDController.setReference(state.angle.getRadians(),
-        // ControlType.kPosition);
-        // turnPIDController.setGoal(state.angle.getRadians());
-        // turnPIDController.calculate(turnEncoder.getAbsolutePosition());
-
         if (RobotBase.isSimulation()) {
-            // double angle = desiredState.angle.getRadians() ;
             double angle = state.angle.getRadians();
             CANcoderSimState encoderSim = turnEncoder.getSimState();
 
@@ -208,8 +184,7 @@ public class SwerveModule {
             } else {
                 rawPosition = (int) ((angle / Math.PI) * 2048.0);
             }
-            // encoderSim.setRawPosition(rawPosition);
-            encoderSim.setRawPosition(state.angle.getDegrees()/180.0);
+            encoderSim.setRawPosition(state.angle.getDegrees() / 180.0);
             Logger.recordOutput("CANCoder " + swerveName,
                     turnEncoder.getAbsolutePosition().getValueAsDouble());
             Logger.recordOutput("CANCoder Raw " + swerveName, rawPosition);
@@ -224,36 +199,10 @@ public class SwerveModule {
         driveEncoder.setPosition(0);
     }
 
-    // public void setDrivePID() {
-    // drivePIDController.setP(DriveKP);
-    // drivePIDController.setI(DriveKI);
-    // drivePIDController.setD(DriveKD);
-    // drivePIDController.setIZone(DriveIZone);
-    // drivePIDController.setFF(DriveFF);
-    // drivePIDController.setOutputRange(-1, 1);
-    // }
-
-    // public void setMotorDefaults() {
-    // driveMotor.restoreFactoryDefaults();
-    // turnMotor.restoreFactoryDefaults();
-
-    // driveMotor.setIdleMode(IdleMode.kBrake);
-    // turnMotor.setIdleMode(IdleMode.kBrake);
-    // }
-
     public void stop() {
         driveMotor.set(0);
         turnMotor.set(0);
     }
-
-    // public void setEncoderDefaults() {
-    // double localPositionConversionFactor = PositionConversionFactor;
-    // if (RobotBase.isSimulation()) {
-    // localPositionConversionFactor *= 1000;
-    // }
-    // driveEncoder.setVelocityConversionFactor(VelocityConversionFactor);
-    // driveEncoder.setPositionConversionFactor(localPositionConversionFactor);
-    // }
 
     public void simulationInit() {
         REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
