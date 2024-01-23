@@ -3,41 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.019856834104456,
-        "y": 4.598571280166335
+        "x": 7.682510738155805,
+        "y": 4.381530087687041
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.019856834104447,
-        "y": 4.098571280166335
+        "x": 5.353448341225041,
+        "y": 5.013213239113046
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.354301765624334,
-        "y": 3.3489160254694954
+        "x": 1.1003320961865806,
+        "y": 5.61038786256677
       },
       "prevControl": {
-        "x": 7.134030731773389,
-        "y": 3.3332526087182566
-      },
-      "nextControl": {
-        "x": 7.574572799475279,
-        "y": 3.3645794422207342
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.239267110406435,
-        "y": 3.3489160254694954
-      },
-      "prevControl": {
-        "x": 3.8985103912815555,
-        "y": 3.31960323931792
+        "x": 2.759575377061701,
+        "y": 5.581075076415194
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.25,
       "rotationDegrees": -179.8676127224203,
       "rotateFast": false
     }
@@ -55,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "marker3",
-      "waypointRelativePos": 1.6,
+      "waypointRelativePos": 0.8,
       "command": {
         "type": "sequential",
         "data": {
@@ -72,7 +56,7 @@
     },
     {
       "name": "marker4",
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 1.0,
       "command": {
         "type": "sequential",
         "data": {

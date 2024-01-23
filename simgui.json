@@ -1,23 +1,4 @@
 {
-  "HALProvider": {
-    "Other Devices": {
-      "CANCoder (v6)[11]": {
-        "header": {
-          "open": true
-        }
-      },
-      "CANCoder (v6)[12]": {
-        "header": {
-          "open": true
-        }
-      },
-      "SPARK MAX [31]": {
-        "header": {
-          "open": true
-        }
-      }
-    }
-  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -34,13 +15,18 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Example Auto": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Field": {
         "Robot": {
           "length": 0.8999999761581421,
           "width": 0.8999999761581421
         },
         "bottom": 544,
-        "builtin": "2023 Charged Up",
+        "builtin": "2024 Crescendo",
         "height": 8.013679504394531,
         "left": 46,
         "path": {
@@ -50,6 +36,21 @@
         "right": 1088,
         "top": 36,
         "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/On-the-fly path": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Pathfind to Pickup Pos": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Pathfind to Scoring Pos": {
         "window": {
           "visible": true
         }
